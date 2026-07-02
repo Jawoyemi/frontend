@@ -349,26 +349,26 @@ export default function App() {
   const renderHeaderRightActions = () => {
     if (currentTab === 'dashboard') {
       return (
-        <div className="flex items-center gap-3">
+        <>
           <button 
             onClick={() => setCurrentTab('case-review')}
-            className="px-4 py-2 bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 rounded text-xs font-semibold cursor-pointer"
           >
-            Review Panel Pending
+            Review Pending
           </button>
           <button 
             onClick={() => handleStartEncounter('pat-1')}
-            className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md shadow-primary/20 hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 uppercase tracking-wider"
+            className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 cursor-pointer flex items-center gap-1"
           >
-            <Plus className="w-4 h-4" /> New Encounter
+            <Plus className="w-3.5 h-3.5" /> New Encounter
           </button>
-        </div>
+        </>
       );
     }
     if (currentTab === 'portfolio') {
       return (
-        <button className="px-5 py-2.5 bg-success-green hover:bg-emerald-600 text-white rounded-xl text-xs font-extrabold shadow-md shadow-emerald-500/20 transition-all cursor-pointer flex items-center gap-1.5 uppercase tracking-wider">
-          Export MDCN Verified
+        <button className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold cursor-pointer">
+          Export Verified
         </button>
       );
     }
@@ -376,20 +376,21 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 text-text-primary mesh-gradient font-sans flex antialiased">
+    <div className="min-h-screen bg-slate-50/50 text-text-primary bg-slate-50 font-sans flex antialiased">
       {/* Side Navigation Menu */}
       <Sidebar 
         currentTab={currentTab} 
-        onTabChange={(tab) => {
+        setCurrentTab={(tab) => {
           setCurrentTab(tab);
           setSearchValue('');
         }}
+        role={currentRole.title.includes('Resident') ? 'Resident' : 'Supervisor'}
         onOpenSettings={() => setShowSettings(true)}
         onOpenSupport={() => setShowSupport(true)}
       />
 
       {/* Main body canvas (offsets sidebar) */}
-      <div className="flex-1 pl-[260px] flex flex-col min-h-screen">
+      <div className="flex-1 pl-52 flex flex-col min-h-screen">
         <Header 
           title={headerTitle}
           subtitle={headerSubtitle}
@@ -400,11 +401,10 @@ export default function App() {
           onSearchChange={setSearchValue}
           currentRole={currentRole}
           onRoleClick={handleCycleRole}
-          rightActions={renderHeaderRightActions()}
         />
 
         {/* Dynamic Inner Tab Content Container */}
-        <main className="flex-1 pt-28 px-10 pb-16">
+        <main className="flex-1 pt-16 px-6 pb-16">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentTab}
@@ -426,9 +426,9 @@ export default function App() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-white px-5 py-3.5 rounded-2xl z-50 flex items-center gap-2.5 shadow-2xl"
+            className="fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-white px-5 py-3.5 rounded-md z-50 flex items-center gap-2.5 shadow-sm"
           >
-            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+            <Activity className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold">{toastMessage}</span>
           </motion.div>
         )}
@@ -441,7 +441,7 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative z-10 text-text-primary"
+            className="bg-white rounded-lg max-w-md w-full p-6 shadow-sm relative z-10 text-text-primary"
           >
             <div className="flex justify-between items-center mb-5 pb-2 border-b border-black/5">
               <h3 className="text-sm font-black flex items-center gap-2 uppercase tracking-wider text-text-primary">
@@ -464,7 +464,7 @@ export default function App() {
                   type="text" 
                   value={mcpEndpoint}
                   onChange={(e) => setMcpEndpoint(e.target.value)}
-                  className="w-full bg-slate-50 border border-black/5 rounded-2xl px-4 py-2.5 text-xs outline-none focus:ring-4 focus:ring-primary/10 font-mono text-primary font-bold"
+                  className="w-full bg-slate-50 border border-black/5 rounded-md px-4 py-2.5 text-xs outline-none focus:ring-4 focus:ring-primary/10 font-mono text-primary font-bold"
                 />
               </div>
 
@@ -497,7 +497,7 @@ export default function App() {
 
             <button 
               onClick={() => setShowSettings(false)}
-              className="mt-6 w-full py-3.5 bg-primary text-white font-extrabold rounded-2xl text-xs hover:bg-primary-container transition-colors uppercase tracking-wider cursor-pointer"
+              className="mt-6 w-full py-3.5 bg-primary text-white font-extrabold rounded-md text-xs hover:bg-primary-container transition-colors uppercase tracking-wider cursor-pointer"
             >
               Apply Configurations
             </button>
@@ -512,7 +512,7 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative z-10 text-text-primary"
+            className="bg-white rounded-lg max-w-md w-full p-6 shadow-sm relative z-10 text-text-primary"
           >
             <div className="flex justify-between items-center mb-4 pb-2 border-b border-black/5">
               <h3 className="text-sm font-black flex items-center gap-2 uppercase tracking-wider text-text-primary">
@@ -541,7 +541,7 @@ export default function App() {
 
             <button 
               onClick={() => setShowSupport(false)}
-              className="mt-6 w-full py-3.5 bg-primary text-white font-bold rounded-2xl text-xs hover:bg-primary-container transition-colors uppercase tracking-wider cursor-pointer"
+              className="mt-6 w-full py-3.5 bg-primary text-white font-bold rounded-md text-xs hover:bg-primary-container transition-colors uppercase tracking-wider cursor-pointer"
             >
               Close Guide
             </button>

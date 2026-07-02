@@ -1,111 +1,79 @@
 import React from 'react';
 import { 
-  LayoutDashboard, 
   Activity, 
   Users, 
   FileText, 
-  Settings, 
+  Stethoscope, 
+  Award,
+  Settings,
   HelpCircle,
-  GraduationCap,
-  Beaker,
-  ShieldCheck
+  LogOut,
+  Hospital
 } from 'lucide-react';
-import { motion } from 'motion/react';
 
 interface SidebarProps {
   currentTab: string;
-  onTabChange: (tab: string) => void;
-  onOpenSettings: () => void;
-  onOpenSupport: () => void;
+  setCurrentTab: (tab: string) => void;
+  role: string;
+  onOpenSettings?: () => void;
+  onOpenSupport?: () => void;
 }
 
-export default function Sidebar({ 
-  currentTab, 
-  onTabChange, 
-  onOpenSettings, 
-  onOpenSupport 
-}: SidebarProps) {
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'encounters', label: 'Encounters', icon: Activity },
-    { id: 'patients', label: 'Patients', icon: Users },
-    { id: 'investigations', label: 'Investigations', icon: Beaker },
+export default function Sidebar({ currentTab, setCurrentTab, role, onOpenSettings, onOpenSupport }: SidebarProps) {
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: Activity },
+    { id: 'patients', label: 'Patient Queue', icon: Users },
+    { id: 'investigations', label: 'Investigations', icon: Stethoscope },
     { id: 'reports', label: 'Reports', icon: FileText },
-    { id: 'portfolio', label: 'Portfolio', icon: GraduationCap },
+    ...(role === 'Resident' ? [{ id: 'portfolio', label: 'My Portfolio', icon: Award }] : []),
+    ...(role === 'Supervisor' ? [{ id: 'case-review', label: 'Supervisor Review', icon: Award }] : []),
   ];
 
   return (
-    <aside 
-      id="side-navbar"
-      className="w-[260px] h-screen fixed left-0 top-0 flex flex-col py-8 glass-sidebar z-50 select-none"
-    >
-      {/* Brand Header */}
-      <div className="px-8 mb-10">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-8 h-8 text-primary" strokeWidth={2.5} />
-          <h1 className="font-page-title text-[24px] font-extrabold text-primary tracking-tighter leading-none">
-            Clinix OS
-          </h1>
-        </div>
-        <p className="font-label-sm text-[11px] text-text-secondary uppercase tracking-widest mt-1.5 font-semibold">
-          Teaching Hospital Ed.
-        </p>
+    <div className="fixed inset-y-0 left-0 w-52 bg-slate-900 flex flex-col border-r border-slate-800 flex-shrink-0 text-slate-300 z-50">
+      <div className="h-14 flex items-center px-4 border-b border-slate-800">
+        <Hospital className="w-5 h-5 text-blue-500 mr-2" />
+        <span className="font-bold text-sm tracking-wide text-white uppercase">Clinix OS</span>
       </div>
 
-      {/* Primary Navigation */}
-      <nav className="flex-1 px-4 space-y-1.5">
-        {navItems.map((item) => {
-          const isActive = currentTab === item.id;
-          const Icon = item.icon;
+      <div className="flex-1 py-4 flex flex-col gap-1 px-2">
+        <span className="px-2 text-[10px] font-bold uppercase text-slate-500 tracking-wider mb-2">Main Menu</span>
+        {tabs.map(tab => {
+          const Icon = tab.icon;
+          const isActive = currentTab === tab.id || (tab.id === 'dashboard' && currentTab === 'new-encounter');
           
           return (
             <button
-              key={item.id}
-              onClick={() => onTabChange(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative group cursor-pointer ${
+              key={tab.id}
+              onClick={() => setCurrentTab(tab.id)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded text-xs font-semibold transition-colors ${
                 isActive 
-                  ? 'text-primary font-bold bg-primary/10 shadow-sm border-r-4 border-primary' 
-                  : 'text-text-secondary hover:bg-black/5 hover:text-primary'
+                  ? 'bg-blue-600 text-white' 
+                  : 'hover:bg-slate-800 hover:text-white text-slate-400'
               }`}
             >
-              {isActive && (
-                <motion.div 
-                  layoutId="active-indicator"
-                  className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r"
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
-              )}
-              <Icon 
-                className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${
-                  isActive ? 'text-primary' : 'text-text-secondary'
-                }`} 
-                strokeWidth={isActive ? 2.5 : 2}
-              />
-              <span className="font-body-semibold text-[14px] leading-none">
-                {item.label}
-              </span>
+              <Icon className="w-4 h-4 flex-shrink-0" />
+              <span>{tab.label}</span>
             </button>
           );
         })}
-      </nav>
+      </div>
 
-      {/* Secondary Bottom Links */}
-      <div className="px-4 mt-auto space-y-1 pt-6 border-t border-black/5">
-        <button
-          onClick={onOpenSettings}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:bg-black/5 hover:text-primary transition-all duration-200 cursor-pointer"
-        >
-          <Settings className="w-5 h-5" />
-          <span className="font-body-semibold text-[14px]">Settings</span>
+      <div className="py-4 px-2 border-t border-slate-800 flex flex-col gap-1">
+        <span className="px-2 text-[10px] font-bold uppercase text-slate-500 tracking-wider mb-2">System</span>
+        <button onClick={onOpenSettings} className="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-semibold hover:bg-slate-800 hover:text-white text-slate-400 cursor-pointer">
+          <Settings className="w-4 h-4 flex-shrink-0" />
+          <span>Preferences</span>
         </button>
-        <button
-          onClick={onOpenSupport}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:bg-black/5 hover:text-primary transition-all duration-200 cursor-pointer"
-        >
-          <HelpCircle className="w-5 h-5" />
-          <span className="font-body-semibold text-[14px]">Support</span>
+        <button onClick={onOpenSupport} className="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-semibold hover:bg-slate-800 hover:text-white text-slate-400 cursor-pointer">
+          <HelpCircle className="w-4 h-4 flex-shrink-0" />
+          <span>Help & Docs</span>
+        </button>
+        <button className="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-semibold hover:bg-red-500/10 hover:text-red-400 text-slate-400 mt-2 cursor-pointer">
+          <LogOut className="w-4 h-4 flex-shrink-0" />
+          <span>Logout</span>
         </button>
       </div>
-    </aside>
+    </div>
   );
 }

@@ -73,7 +73,7 @@ export default function WalletSuccessView({
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', duration: 0.6 }}
-        className="relative z-10 w-full max-w-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border border-white/40 shadow-2xl p-6 md:p-10 flex flex-col items-center text-center overflow-hidden"
+        className="relative z-10 w-full max-w-2xl bg-white/70 backdrop-blur-2xl rounded-lg border border-white/40 shadow-sm p-6 md:p-6 flex flex-col items-center text-center overflow-hidden"
       >
         {/* Close Button top-right */}
         <button 
@@ -102,7 +102,7 @@ export default function WalletSuccessView({
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgfG2scA9KsAHkwD4C1Dc74kcYJiWIR9Nln7bZJe6vmKM4NzD5v_JPkCQfZF9WwA5-lQUQ1Sn7pDnQrvU6GgxdjtsJoUsG4hvQXo1-Y9EOPNhcQ1Oqe5CCUcrdmWEgJ2eA-c0K5sRSkryxnDJiA48r2CsNTVTlNb_3lKz9CnuRB-JW-h2dWtkMwTWdeKtQVTqOayuJSSZsISrf-JNWXwGIuaNTNWjS3w5DQWlnSTKlw3_ODuxKO0r6tcuM4TS380RTIyJtVXZQ8i4" 
               alt="Digital wallet simulation" 
               referrerPolicy="no-referrer"
-              className="object-contain drop-shadow-xl w-32 h-32 transform group-hover:scale-105 transition-transform duration-500" 
+              className="object-contain drop-shadow-sm w-32 h-32 transform group-hover:scale-105 transition-transform duration-500" 
             />
           </div>
         </div>
@@ -117,8 +117,8 @@ export default function WalletSuccessView({
 
         {/* Digital QR Access Token */}
         <div className="relative group cursor-pointer mb-6">
-          <div className="absolute -inset-4 bg-primary/5 rounded-2xl blur-lg transition-all group-hover:bg-primary/10" />
-          <div className="relative bg-white p-4 rounded-2xl border border-black/5 shadow-md flex items-center justify-center">
+          <div className="absolute -inset-4 bg-primary/5 rounded-md blur-lg transition-all group-hover:bg-primary/10" />
+          <div className="relative bg-white p-4 rounded-md border border-black/5 shadow-md flex items-center justify-center">
             <img 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPdGo6EqLec_1EwshOTL8oLQg8dsPecyfroUJkLBpq2Nsx-Kvc7qo0yctqxBKyZ60ThYwp25PY3JirjCSLp5CqqzqZjUROm5OCM4ZuPt2Oc4Vxm_q6AMRPZIAOcsaJcO78m7qAMOsuo7WuCXVZVZGk-OraneDibmmy0hu6hy4vTajHYfyXGX83K9wPLyMlhIUuyhndt9xR0A9sfax39Xx53eECNTs4ytFPki6NccKns9HkYdEe6VCu9882PMw6z0G6i00fMhR0iJE" 
               alt="Diagnostic QR Lock Key" 
@@ -142,7 +142,7 @@ export default function WalletSuccessView({
         <div className="w-full flex flex-col sm:flex-row gap-3 items-center justify-center">
           <button 
             onClick={handleDownload}
-            className="w-full sm:w-auto px-6 py-3 bg-primary text-white hover:bg-primary-container rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-primary/20 transition-all cursor-pointer uppercase tracking-wider"
+            className="w-full sm:w-auto px-6 py-3 bg-primary text-white hover:bg-primary-container rounded-md font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-primary/20 transition-all cursor-pointer uppercase tracking-wider"
           >
             {downloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
             {downloaded ? 'Receipt Saved' : 'Save PDF Receipt'}
@@ -150,7 +150,7 @@ export default function WalletSuccessView({
           
           <button 
             onClick={handleCopy}
-            className="w-full sm:w-auto px-6 py-3 bg-white text-primary border-2 border-primary/20 hover:border-primary/40 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer uppercase tracking-wider"
+            className="w-full sm:w-auto px-6 py-3 bg-white text-primary border-2 border-primary/20 hover:border-primary/40 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer uppercase tracking-wider"
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? 'Link Copied' : 'Copy Sync Link'}
