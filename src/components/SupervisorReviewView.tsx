@@ -5,10 +5,13 @@ import {
   User, 
   Check, 
   TrendingUp, 
-  Timer, 
   CheckCircle2, 
-  AlertOctagon
+  AlertOctagon,
+  Brain,
+  ArrowLeft,
+  Shield
 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface SupervisorReviewProps {
   onBack: () => void;
@@ -23,7 +26,6 @@ export default function SupervisorReviewView({
   const [adopted, setAdopted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Adopt AI suggestions action
   const handleAdoptSuggestions = () => {
     setIsProcessing(true);
     setTimeout(() => {
@@ -31,172 +33,243 @@ export default function SupervisorReviewView({
       setIsProcessing(false);
       setSupervisorNotes(prev => 
         (prev ? prev + '\n\n' : '') + 
-        'Agree with Resident draft. Appending anti-emetic Zofran 4mg IV Q6H PRN per patient\'s nausea rating (4/10) and history of Ibuprofen sensitivity. Monitor urine output.'
+        'Concur with student assessment. Malaria RDT positive — confirm ACT regimen. Add anti-emetic (Ondansetron 4mg) PRN for nausea. Schedule Day 3 follow-up for parasite clearance.'
       );
     }, 800);
   };
 
   const handleSignEncounter = () => {
-    onApproveAndSign('Patient #8842-X', 'Post-Op Laparoscopic Cholecystectomy');
+    onApproveAndSign('Fatima Abdullahi', 'Probable Malaria (Uncomplicated)');
   };
 
   return (
-    <div className="space-y-4 select-none">
-      {/* Header Actions & Meta */}
-      <div className="bg-white border border-slate-300 flex flex-col lg:flex-row justify-between items-start lg:items-center p-3">
-        <div>
-          <nav className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">
-            <span className="hover:text-slate-800 cursor-pointer" onClick={onBack}>Encounters</span>
-            <span>/</span>
-            <span className="hover:text-slate-800 cursor-pointer">Reviews</span>
-            <span>/</span>
-            <span className="text-slate-800">Post-Op Assessment</span>
-          </nav>
-          <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-none uppercase">
-            Case Review: Patient #8842-X
-          </h3>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-            Submitted by Resident Sarah Chen • 4h ago
-          </p>
+    <div className="space-y-5 select-none">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="p-2 hover:bg-bg-main rounded-xl text-text-secondary transition-colors cursor-pointer">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div>
+            <h2 className="text-sm font-bold text-text-primary tracking-tight">Supervisor Review</h2>
+            <p className="text-[10px] text-text-secondary font-medium">
+              Submitted by Ademilua Adeola • 500L Student • 30m ago
+            </p>
+          </div>
         </div>
-
-        <div className="flex gap-2 mt-3 lg:mt-0">
+        <div className="flex gap-2">
           <button 
             onClick={onBack}
-            className="px-4 py-1.5 border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-accent/10 border border-accent/20 text-accent font-bold text-[11px] rounded-xl hover:bg-accent/15 flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <AlertOctagon className="w-3.5 h-3.5" /> Emergency Protocol
+            <AlertOctagon className="w-3.5 h-3.5" /> Request Changes
           </button>
           <button 
             onClick={handleSignEncounter}
-            className="px-4 py-1.5 border border-slate-800 bg-slate-800 hover:bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-4 py-2 gradient-primary text-white font-bold text-[11px] rounded-xl hover:shadow-lg hover:shadow-primary/25 flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <Check className="w-3.5 h-3.5" /> Approve &amp; Sign
+            <Check className="w-3.5 h-3.5" /> Approve & Sign
           </button>
         </div>
       </div>
 
-      {/* Tri-Pane Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        
-        {/* Resident Draft Column */}
-        <div className="bg-white border border-slate-300 flex flex-col">
-          <div className="px-3 py-2 border-b border-slate-300 flex justify-between items-center bg-slate-50">
-            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Resident Draft</span>
-            <History className="w-3.5 h-3.5 text-slate-400" />
-          </div>
-          <div className="p-3 flex-1">
-            <h4 className="font-black text-[9px] uppercase tracking-widest text-slate-400 mb-1">Clinical Findings</h4>
-            <div className="text-[11px] leading-relaxed text-slate-800 font-medium mb-4">
-              Patient presents post-laparoscopic cholecystectomy. Minimal drainage noted in JP bulb (serosanguinous). Vital signs stable within normal range. Mild tenderness at umbilical port site. Recommended discharge tomorrow morning.
-            </div>
-            <h4 className="font-black text-[9px] uppercase tracking-widest text-slate-400 mb-1">Plan &amp; Action</h4>
-            <ul className="space-y-1 text-[11px] font-medium text-slate-800">
-              <li className="flex gap-2 items-start">
-                <CheckCircle2 className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
-                <span>Continue current pain management regimen.</span>
-              </li>
-              <li className="flex gap-2 items-start">
-                <CheckCircle2 className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
-                <span>Advance diet as tolerated.</span>
-              </li>
-            </ul>
+      {/* Patient Context */}
+      <div className="gradient-dark rounded-2xl p-4 flex items-center justify-between text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center font-bold text-sm">FA</div>
+          <div>
+            <h3 className="font-bold text-sm">Fatima Abdullahi</h3>
+            <p className="text-[10px] text-white/50 font-medium">LTH-2024-001 • Female, 34y • Fever, headache, chills for 3 days</p>
           </div>
         </div>
+        <span className="px-2.5 py-1 rounded-lg bg-accent/20 text-accent text-[10px] font-bold">Urgent</span>
+      </div>
 
-        {/* AI Validation Column */}
-        <div className="bg-white border border-blue-200 flex flex-col">
-          <div className="px-3 py-2 border-b border-blue-200 flex justify-between items-center bg-blue-50">
-            <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Automated Validation</span>
-            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-          </div>
-          <div className="p-3 flex-1 flex flex-col">
-            <h4 className="font-black text-[9px] uppercase tracking-widest text-blue-500 mb-1">Discrepancy Analysis</h4>
-            <div className="text-[11px] leading-relaxed text-blue-900 font-bold mb-4 bg-blue-50/50 p-2 border border-blue-100">
-              Warning: Historical data for Patient #8842-X indicates a previous adverse reaction to Ibuprofen. Resident plan lacks specific anti-emetic orders which are critical given the patient's nausea score (4/10).
+      {/* Tri-Pane Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
+        {/* Student Assessment */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card-base overflow-hidden"
+        >
+          <div className="px-5 py-3 border-b border-border flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <User className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-bold text-text-primary">Student Assessment</span>
             </div>
-            <div className="mt-auto">
-              <div className="flex items-start gap-2 p-2 border border-blue-200 bg-white mb-2">
-                <TrendingUp className="w-4 h-4 text-blue-600 mt-0.5" />
+            <History className="w-3.5 h-3.5 text-text-light" />
+          </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <h4 className="text-[10px] font-semibold text-text-secondary mb-1.5">Clinical Findings</h4>
+              <p className="text-[11px] leading-relaxed text-text-primary">
+                34-year-old female presents with 3-day history of high-grade fever (38.5°C), severe headache, and rigors. 
+                No recent travel. Endemic malaria area. BP 120/80, Pulse 88, SpO2 98%.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-semibold text-text-secondary mb-1.5">Working Diagnosis</h4>
+              <p className="text-[11px] font-semibold text-text-primary bg-primary/5 px-3 py-2 rounded-lg border border-primary/10">
+                Probable Malaria (Uncomplicated)
+              </p>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-semibold text-text-secondary mb-1.5">Plan</h4>
+              <ul className="space-y-1.5">
+                {[
+                  'Confirm with Malaria RDT',
+                  'Start ACT (Artemether-Lumefantrine) if positive',
+                  'Full Blood Count',
+                  'Adequate hydration and antipyretics',
+                ].map((item, idx) => (
+                  <li key={idx} className="flex gap-2 items-start text-[11px] text-text-primary">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* AI Validation */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card-base overflow-hidden border-primary/20"
+        >
+          <div className="px-5 py-3 border-b border-primary/20 flex justify-between items-center bg-primary/5">
+            <div className="flex items-center gap-2">
+              <Brain className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-bold text-primary">AI Validation</span>
+            </div>
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+          </div>
+          <div className="p-5 space-y-4 flex-1 flex flex-col">
+            <div>
+              <h4 className="text-[10px] font-semibold text-primary mb-1.5">Concordance Analysis</h4>
+              <div className="text-[11px] leading-relaxed text-text-primary bg-success/5 p-3 rounded-lg border border-success/15">
+                <CheckCircle2 className="w-3.5 h-3.5 text-success inline mr-1.5" />
+                Student diagnosis <span className="font-bold">concordant</span> with AI analysis (92% confidence for Malaria). 
+                Symptom triad and clinical presentation are consistent with uncomplicated malaria.
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-semibold text-primary mb-1.5">Additional Suggestion</h4>
+              <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/15 bg-white">
+                <TrendingUp className="w-4 h-4 text-primary mt-0.5" />
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-blue-500">Suggested Revision</p>
-                  <p className="text-[11px] font-bold text-slate-900 mt-0.5">Add Zofran 4mg IV Q6H PRN</p>
+                  <p className="text-[11px] font-semibold text-text-primary">Add anti-emetic PRN</p>
+                  <p className="text-[10px] text-text-secondary mt-0.5">
+                    Patient's nausea rating suggests Ondansetron 4mg PRN may improve treatment adherence.
+                  </p>
                 </div>
               </div>
+            </div>
+
+            <div className="mt-auto">
               <button 
                 onClick={handleAdoptSuggestions}
                 disabled={adopted || isProcessing}
-                className={`w-full py-2 border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                className={`w-full py-2.5 rounded-xl text-[11px] font-bold transition-all ${
                   adopted 
-                    ? 'bg-blue-50 border-blue-200 text-blue-600 cursor-default' 
-                    : 'bg-white border-blue-300 text-blue-700 hover:bg-blue-50 cursor-pointer'
+                    ? 'bg-success/10 border border-success/20 text-success cursor-default' 
+                    : 'bg-primary/10 border border-primary/20 text-primary hover:bg-primary/15 cursor-pointer'
                 }`}
               >
-                {isProcessing ? 'Processing...' : adopted ? 'Suggestions Adopted' : 'Adopt Overrides'}
+                {isProcessing ? 'Processing...' : adopted ? '✓ Suggestions Adopted' : 'Adopt Suggestions'}
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Supervisor Final Input Column */}
-        <div className="bg-slate-800 border border-slate-700 flex flex-col">
-          <div className="px-3 py-2 border-b border-slate-700 flex justify-between items-center bg-slate-900">
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Attending Signature</span>
-            <User className="w-3.5 h-3.5 text-slate-400" />
+        {/* Supervisor Notes */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="gradient-dark rounded-2xl overflow-hidden border border-white/10"
+        >
+          <div className="px-5 py-3 border-b border-white/10 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-primary-light" />
+              <span className="text-xs font-bold text-white">Supervisor Notes</span>
+            </div>
           </div>
-          <div className="p-3 flex-1 flex flex-col gap-2">
+          <div className="p-4 flex flex-col gap-3 h-full">
             <textarea 
               value={supervisorNotes}
               onChange={(e) => setSupervisorNotes(e.target.value)}
-              className="w-full flex-1 bg-slate-900 border border-slate-700 focus:border-slate-500 p-2 text-[11px] font-mono text-slate-300 placeholder:text-slate-600 resize-none outline-none transition-all"
-              placeholder="Append clinical directives..."
+              className="flex-1 min-h-[200px] bg-white/5 border border-white/10 focus:border-primary/40 rounded-xl p-3 text-[11px] text-white/80 placeholder:text-white/20 resize-none outline-none transition-all"
+              placeholder="Add clinical directives, corrections, or teaching notes..."
             />
             <div className="flex gap-2">
-              <button className="flex-1 py-2 border border-slate-600 text-slate-300 hover:bg-slate-700 font-bold text-[10px] uppercase tracking-widest transition-colors cursor-pointer">
-                Flag
+              <button 
+                onClick={onBack}
+                className="flex-1 py-2.5 border border-white/10 text-white/60 hover:bg-white/5 rounded-xl font-bold text-[11px] transition-all cursor-pointer"
+              >
+                Request Changes
               </button>
               <button 
                 onClick={handleSignEncounter}
-                className="flex-[2] py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold text-[10px] uppercase tracking-widest transition-colors cursor-pointer"
+                className="flex-[2] py-2.5 gradient-primary hover:shadow-lg hover:shadow-primary/25 text-white rounded-xl font-bold text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
-                Sign Off
+                <Check className="w-3.5 h-3.5" /> Approve & Sign
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Student Telemetry Matrix */}
-      <div className="bg-white border border-slate-300">
-        <div className="px-3 py-2 border-b border-slate-300 flex justify-between items-center bg-slate-50">
-          <h3 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Resident Telemetry Matrix</h3>
-          <div className="flex gap-4">
-            <span className="text-[9px] font-black tracking-widest uppercase text-green-600">Avg Time: 14.2M</span>
-            <span className="text-[9px] font-black tracking-widest uppercase text-blue-600">Accuracy: 92.4%</span>
+      {/* Student Competency Metrics */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="card-base overflow-hidden"
+      >
+        <div className="px-5 py-3.5 border-b border-border flex justify-between items-center">
+          <h3 className="text-xs font-bold text-text-primary">Student Competency — This Encounter</h3>
+          <div className="flex gap-4 text-[10px] font-semibold">
+            <span className="text-success">Accuracy: 94%</span>
+            <span className="text-primary">Duration: 18m</span>
           </div>
         </div>
-        
-        {/* Dense Tabular Matrix replacing the animated Radar Chart */}
-        <div className="grid grid-cols-2 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+        <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-border-light">
           {[
-            { label: 'Diagnostics', score: '94/100', trend: '+2%' },
-            { label: 'Tech Skills', score: '88/100', trend: '+5%' },
-            { label: 'Ethics', score: '99/100', trend: '0%' },
-            { label: 'Communication', score: '82/100', trend: '-1%' },
-            { label: 'Clinical Judgement', score: '91/100', trend: '+4%' }
+            { label: 'History Taking', score: 95, max: 100 },
+            { label: 'Physical Exam', score: 88, max: 100 },
+            { label: 'Diagnosis', score: 92, max: 100 },
+            { label: 'Treatment Plan', score: 90, max: 100 },
+            { label: 'Communication', score: 96, max: 100 },
           ].map((metric) => (
-            <div key={metric.label} className="p-3">
-              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">{metric.label}</p>
-              <div className="flex justify-between items-end">
-                <p className="text-sm font-bold text-slate-900">{metric.score}</p>
-                <p className={`text-[9px] font-black ${metric.trend.includes('-') ? 'text-red-500' : 'text-green-500'}`}>
-                  {metric.trend}
-                </p>
+            <div key={metric.label} className="p-4 text-center">
+              <p className="text-[10px] font-semibold text-text-secondary mb-2">{metric.label}</p>
+              <div className="relative mx-auto w-10 h-10 mb-1.5">
+                <svg className="w-10 h-10 transform -rotate-90" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" stroke="#e2e8f0" strokeWidth="3" fill="none" />
+                  <circle 
+                    cx="20" cy="20" r="16" 
+                    stroke="#0d9488" 
+                    strokeWidth="3" 
+                    fill="none" 
+                    strokeLinecap="round"
+                    strokeDasharray={`${(metric.score / 100) * 100.5} 100.5`}
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-text-primary">
+                  {metric.score}
+                </span>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

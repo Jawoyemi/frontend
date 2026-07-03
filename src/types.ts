@@ -1,15 +1,14 @@
 export interface Patient {
   id: string;
-  name: string;
+  hospitalId: string;
+  firstName: string;
+  lastName: string;
   age: number;
-  gender: 'Male' | 'Female' | 'Other';
-  mrn: string;
-  bloodType: string;
-  ward: string;
-  avatarInitials: string;
+  gender: 'M' | 'F';
+  phone?: string;
   chiefComplaint: string;
-  arrivalText: string;
-  urgency: 'Urgent' | 'Waiting' | 'Routine';
+  waitingTime: number;
+  priority: 'urgent' | 'waiting' | 'routine';
   vitals: {
     temp: number;
     bp: string;
@@ -21,7 +20,7 @@ export interface Patient {
 
 export interface SystemLog {
   id: string;
-  type: 'verified' | 'autosave' | 'pending';
+  type: 'verified' | 'autosave' | 'pending' | 'ai';
   title: string;
   description: string;
   timeAgo: string;
@@ -35,20 +34,58 @@ export interface ClinicalProcedure {
   setting: string;
   supervisor: {
     name: string;
-    avatarUrl: string;
     role: string;
   };
   seal: string;
+  credits: number;
 }
 
-export interface ReviewCase {
+export interface User {
   id: string;
-  residentName: string;
-  timeAgo: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'student' | 'supervisor';
+  yearOfStudy?: number;
+  hospital: string;
+}
+
+export interface AIAnalysis {
+  primaryDiagnosis: string;
+  confidence: number;
+  differential: { condition: string; probability: number }[];
+  recommendedInvestigations: string[];
+  urgency: string;
+  mcpActions: {
+    skill: string;
+    actions: {
+      type: string;
+      drug?: string;
+      stock?: number;
+      available?: boolean;
+      test?: string;
+      days?: number;
+    }[];
+  }[];
+}
+
+export interface PortfolioStats {
+  totalEncounters: number;
+  totalDiagnoses: number;
+  diagnosticAccuracy: number;
+  totalCredits: number;
+  clinicalHours: number;
+  competencies: {
+    [key: string]: { score: number; encounters: number };
+  };
+}
+
+export interface WalletRecord {
+  id: string;
   patientId: string;
-  patientName: string;
-  findings: string;
-  plan: string[];
-  aiInsight: string;
-  aiSuggestion: string;
+  encounterId: string;
+  qrPayload: string;
+  encryptedSummary: string;
+  status: 'pending' | 'pushed';
+  pushedAt?: string;
 }

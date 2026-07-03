@@ -4,171 +4,181 @@ import {
   Download, 
   Copy, 
   Clock, 
-  HelpCircle,
   X,
-  Check
+  Check,
+  Printer,
+  Award,
+  Sparkles
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface WalletSuccessProps {
   onClose: () => void;
   patientName?: string;
   diagnosis?: string;
+  creditsEarned?: number;
 }
 
 export default function WalletSuccessView({ 
   onClose,
-  patientName = "John Doe",
-  diagnosis = "Malaria (Uncomplicated)"
+  patientName = "Fatima Abdullahi",
+  diagnosis = "Probable Malaria (Uncomplicated)",
+  creditsEarned = 8
 }: WalletSuccessProps) {
-  const [secondsLeft, setSecondsLeft] = useState(599); // 09:59
+  const [secondsLeft, setSecondsLeft] = useState(86400); // 24 hours
   const [copied, setCopied] = useState(false);
-  const [downloaded, setDownloaded] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
 
-  // Live ticking countdown timer
+  const encounterId = `CLINIX-ENC-${crypto.randomUUID().slice(0, 8)}`;
+  const qrPayload = `https://wallet.chekk.io/demo/${encounterId}`;
+
   useEffect(() => {
     const timer = setInterval(() => {
       setSecondsLeft((prev) => {
-        if (prev <= 0) return 599; // cycle reset
+        if (prev <= 0) return 86400;
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Trigger credits animation
+  useEffect(() => {
+    const timer = setTimeout(() => setShowCredits(true), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
   const formatTime = (totalSec: number) => {
-    const min = Math.floor(totalSec / 60);
+    const hours = Math.floor(totalSec / 3600);
+    const min = Math.floor((totalSec % 3600) / 60);
     const sec = totalSec % 60;
-    const padMin = min < 10 ? '0' + min : min;
-    const padSec = sec < 10 ? '0' + sec : sec;
-    return `${padMin}:${padSec}`;
+    return `${hours.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   };
 
   const handleCopy = () => {
     setCopied(true);
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(qrPayload);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleDownload = () => {
-    setDownloaded(true);
-    setTimeout(() => setDownloaded(false), 2000);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden select-none">
-      {/* Blurred background image overlay */}
-      <div className="absolute inset-0 bg-cover bg-center bg-slate-100 z-0">
-        <img 
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ_yJsoEVqhuA4_wn7iyLWsFTTBnMH8NsPyCoKpTkyO8W6kzgHHb3iuzsy8FpDJ6l1MWM-DK6MMGDvrRHCFa4i7oEfLWdi5-dcHHXIVxybKm5W5RN3IaNXYrAj1p8V2QpPUpgNf5VrJwDHWbiylefMKD7ZPG0w7vY73tUzrvgPfIPlXY7I1zkSIvn9lfzrdqcKx1cdZF5V-S08ooqWkX0DjNFBfbVKYmIw193dA5s_Ndu76b3Z4HOZ1o5Qdo-0N1oiCK9NGyl5N9U" 
-          alt="Clinical Grid Background" 
-          referrerPolicy="no-referrer"
-          className="w-full h-full object-cover opacity-45 filter blur-xs" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-tr from-slate-200/50 via-white/40 to-slate-200/50 mix-blend-multiply" />
-      </div>
+      {/* Background */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" onClick={onClose} />
 
-      {/* Main Success Dialog Canvas */}
-      <motion.main 
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+      {/* Main Card */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', duration: 0.6 }}
-        className="relative z-10 w-full max-w-2xl bg-white/70 backdrop-blur-2xl rounded-lg border border-white/40 shadow-sm p-6 md:p-6 flex flex-col items-center text-center overflow-hidden"
+        className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
       >
-        {/* Close Button top-right */}
+        {/* Credits Animation */}
+        {showCredits && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-0 left-0 right-0 gradient-primary py-3 flex items-center justify-center gap-2 z-20"
+          >
+            <div className="animate-credit-pop flex items-center gap-2">
+              <Award className="w-5 h-5 text-white" />
+              <span className="text-white font-extrabold text-sm">+{creditsEarned} Clinical Credits Earned!</span>
+              <Sparkles className="w-4 h-4 text-white/60" />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 bg-black/5 hover:bg-black/10 rounded-full text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+          className="absolute top-4 right-4 p-2 bg-black/5 hover:bg-black/10 rounded-xl text-text-secondary hover:text-text-primary transition-colors cursor-pointer z-30"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Branding header */}
-        <div className="mb-6 flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-1">
-            <ShieldCheck className="w-6 h-6 text-primary" strokeWidth={2.5} />
-            <span className="font-page-title text-[20px] font-black text-primary tracking-tight">
-              Sovereign Clinical Agent
-            </span>
+        <div className={`p-8 flex flex-col items-center text-center ${showCredits ? 'pt-16' : ''}`}>
+          {/* Branding */}
+          <div className="flex items-center gap-2 mb-2">
+            <img src="/clinix-logo.jpg" alt="Clinix" className="w-6 h-6 rounded-lg" />
+            <span className="font-extrabold text-sm text-primary tracking-tight">Clinix</span>
           </div>
-          <div className="h-0.5 w-12 bg-primary rounded-full opacity-20"></div>
-        </div>
+          <h2 className="text-xs text-text-secondary font-medium mb-6">Encounter Slip — LAUTECH Teaching Hospital</h2>
 
-        {/* 3D Crystalline digital health wallet artwork */}
-        <div className="relative w-40 h-40 mb-6 group">
-          <div className="absolute inset-0 bg-primary/10 rounded-full scale-125 blur-3xl opacity-50 group-hover:opacity-75 transition-opacity" />
-          <div className="relative z-10 w-full h-full flex items-center justify-center">
-            <img 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgfG2scA9KsAHkwD4C1Dc74kcYJiWIR9Nln7bZJe6vmKM4NzD5v_JPkCQfZF9WwA5-lQUQ1Sn7pDnQrvU6GgxdjtsJoUsG4hvQXo1-Y9EOPNhcQ1Oqe5CCUcrdmWEgJ2eA-c0K5sRSkryxnDJiA48r2CsNTVTlNb_3lKz9CnuRB-JW-h2dWtkMwTWdeKtQVTqOayuJSSZsISrf-JNWXwGIuaNTNWjS3w5DQWlnSTKlw3_ODuxKO0r6tcuM4TS380RTIyJtVXZQ8i4" 
-              alt="Digital wallet simulation" 
-              referrerPolicy="no-referrer"
-              className="object-contain drop-shadow-sm w-32 h-32 transform group-hover:scale-105 transition-transform duration-500" 
-            />
-          </div>
-        </div>
+          {/* Encounter Slip Card */}
+          <div className="w-full bg-bg-main rounded-2xl border border-border p-6 mb-6">
+            {/* Hospital Header */}
+            <div className="text-center mb-4 pb-4 border-b border-border border-dashed">
+              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">LAUTECH Teaching Hospital</h3>
+              <p className="text-[10px] text-text-secondary mt-0.5">Ogbomoso, Oyo State, Nigeria</p>
+            </div>
 
-        {/* Success Confirmation Title & Text */}
-        <h1 className="text-[26px] font-extrabold text-text-primary tracking-tight leading-none mb-2">
-          Wallet Provisioned
-        </h1>
-        <p className="text-xs text-text-secondary max-w-md leading-relaxed mb-6">
-          Your secure clinical credential for <span className="font-bold text-text-primary">{patientName}</span> is compiled with diagnostic outcome <span className="font-semibold text-primary">{diagnosis}</span>. Scan the cryptographic token below to sync.
-        </p>
+            {/* Patient Info */}
+            <div className="grid grid-cols-2 gap-3 mb-4 text-left">
+              <div>
+                <p className="text-[9px] text-text-light font-semibold uppercase">Patient</p>
+                <p className="text-xs font-bold text-text-primary">{patientName}</p>
+              </div>
+              <div>
+                <p className="text-[9px] text-text-light font-semibold uppercase">Date</p>
+                <p className="text-xs font-bold text-text-primary">{new Date().toLocaleDateString()}</p>
+              </div>
+              <div>
+                <p className="text-[9px] text-text-light font-semibold uppercase">Diagnosis</p>
+                <p className="text-xs font-semibold text-primary">{diagnosis}</p>
+              </div>
+              <div>
+                <p className="text-[9px] text-text-light font-semibold uppercase">Encounter ID</p>
+                <p className="text-[10px] font-mono font-semibold text-text-secondary">{encounterId}</p>
+              </div>
+            </div>
 
-        {/* Digital QR Access Token */}
-        <div className="relative group cursor-pointer mb-6">
-          <div className="absolute -inset-4 bg-primary/5 rounded-md blur-lg transition-all group-hover:bg-primary/10" />
-          <div className="relative bg-white p-4 rounded-md border border-black/5 shadow-md flex items-center justify-center">
-            <img 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPdGo6EqLec_1EwshOTL8oLQg8dsPecyfroUJkLBpq2Nsx-Kvc7qo0yctqxBKyZ60ThYwp25PY3JirjCSLp5CqqzqZjUROm5OCM4ZuPt2Oc4Vxm_q6AMRPZIAOcsaJcO78m7qAMOsuo7WuCXVZVZGk-OraneDibmmy0hu6hy4vTajHYfyXGX83K9wPLyMlhIUuyhndt9xR0A9sfax39Xx53eECNTs4ytFPki6NccKns9HkYdEe6VCu9882PMw6z0G6i00fMhR0iJE" 
-              alt="Diagnostic QR Lock Key" 
-              referrerPolicy="no-referrer"
-              className="w-36 h-36 object-cover" 
-            />
-            <div className="absolute top-2 right-2 p-1 bg-slate-50 border border-black/5 rounded-lg text-primary shadow-sm">
-              <Lock className="w-3.5 h-3.5" />
+            {/* QR Code */}
+            <div className="flex flex-col items-center py-4 border-t border-border border-dashed">
+              <div className="p-4 bg-white rounded-2xl border border-border shadow-sm mb-3">
+                <QRCodeSVG 
+                  value={qrPayload} 
+                  size={160}
+                  level="H"
+                  includeMargin={false}
+                  fgColor="#0f172a"
+                />
+              </div>
+              <p className="text-[10px] font-semibold text-primary">Scan to view in Chekk Wallet</p>
+              <p className="text-[9px] text-text-light mt-1 font-mono">{qrPayload}</p>
             </div>
           </div>
-        </div>
 
-        {/* Ticking key expiry counter */}
-        <div className="flex items-center gap-1.5 mb-8 px-4 py-1.5 bg-slate-50 border border-black/5 rounded-full shadow-inner select-none">
-          <Clock className="w-4 h-4 text-secondary ticking" />
-          <span className="text-[10px] text-text-secondary uppercase font-black tracking-wider">Key expires in:</span>
-          <span className="text-xs font-mono font-black text-secondary">{formatTime(secondsLeft)}</span>
-        </div>
+          {/* Expiry Timer */}
+          <div className="flex items-center gap-2 mb-6 px-4 py-2 bg-bg-main border border-border rounded-full">
+            <Clock className="w-3.5 h-3.5 text-accent" />
+            <span className="text-[10px] text-text-secondary font-semibold">Expires in:</span>
+            <span className="text-xs font-mono font-bold text-accent">{formatTime(secondsLeft)}</span>
+          </div>
 
-        {/* Trigger controls with feedback states */}
-        <div className="w-full flex flex-col sm:flex-row gap-3 items-center justify-center">
-          <button 
-            onClick={handleDownload}
-            className="w-full sm:w-auto px-6 py-3 bg-primary text-white hover:bg-primary-container rounded-md font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-primary/20 transition-all cursor-pointer uppercase tracking-wider"
-          >
-            {downloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-            {downloaded ? 'Receipt Saved' : 'Save PDF Receipt'}
-          </button>
-          
-          <button 
-            onClick={handleCopy}
-            className="w-full sm:w-auto px-6 py-3 bg-white text-primary border-2 border-primary/20 hover:border-primary/40 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer uppercase tracking-wider"
-          >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Link Copied' : 'Copy Sync Link'}
-          </button>
-        </div>
+          {/* Action Buttons */}
+          <div className="w-full flex gap-3">
+            <button 
+              onClick={() => window.print()}
+              className="flex-1 py-3 gradient-primary text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 hover:shadow-lg hover:shadow-primary/25 transition-all cursor-pointer"
+            >
+              <Printer className="w-4 h-4" /> Print Slip
+            </button>
+            <button 
+              onClick={handleCopy}
+              className="flex-1 py-3 bg-white text-primary border-2 border-primary/20 hover:border-primary/40 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+          </div>
 
-        {/* Help footer */}
-        <div className="mt-8 pt-5 border-t border-black/5 w-full">
-          <button 
-            onClick={onClose}
-            className="text-text-secondary hover:text-primary font-body-semibold text-xs flex items-center gap-1.5 mx-auto transition-colors cursor-pointer"
-          >
-            <HelpCircle className="w-4 h-4" />
-            <span>Didn't receive the credentials? </span>
-            <span className="underline font-bold text-primary">Resend to Email</span>
-          </button>
+          {/* Footer */}
+          <p className="text-[10px] text-text-light mt-5">
+            Patient scans this slip at home to access their record in the <span className="font-semibold text-primary">Chekk Data Wallet</span>
+          </p>
         </div>
-      </motion.main>
+      </motion.div>
     </div>
   );
 }

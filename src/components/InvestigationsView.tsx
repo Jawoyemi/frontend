@@ -3,8 +3,11 @@ import {
   Clock, 
   CheckCircle2, 
   AlertCircle, 
-  Download
+  Download,
+  Stethoscope,
+  FlaskConical
 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface InvestigationsViewProps {
   searchValue: string;
@@ -12,10 +15,10 @@ interface InvestigationsViewProps {
 
 export default function InvestigationsView({ searchValue }: InvestigationsViewProps) {
   const labInvestigations = [
-    { id: 'LAB-9021', test: 'RDT for Malaria', patient: 'Fatima Abdullahi', status: 'Completed', result: 'Positive (Plasmodium falciparum)', date: 'Today, 14:10', validator: 'Dr. Ibrahim (Pathology)' },
-    { id: 'LAB-9022', test: 'Full Blood Count (FBC)', patient: 'Fatima Abdullahi', status: 'Processing', result: 'Pending cell count metrics', date: 'Today, 13:45', validator: 'System Auto-analysis' },
-    { id: 'LAB-8910', test: 'Urinalysis Multi-parameter', patient: 'James Okafor', status: 'Completed', result: 'Normal parameters, no leukocyte esterase', date: 'Yesterday, 10:20', validator: 'Dr. Sarah Chen' },
-    { id: 'LAB-8842', test: 'Liver Function Test (LFT)', patient: 'Sarah Chen (Review)', status: 'Awaiting Sample', result: 'Awaiting phlebotomy collection', date: 'Today, 09:00', validator: 'Central Lab Ward 1' }
+    { id: 'LAB-9021', test: 'RDT for Malaria', patient: 'Fatima Abdullahi', status: 'Completed', result: 'Positive (P. falciparum)', date: 'Today, 14:10', validator: 'Dr. Ibrahim (Pathology)' },
+    { id: 'LAB-9022', test: 'Full Blood Count (FBC)', patient: 'Fatima Abdullahi', status: 'Processing', result: 'Pending cell count analysis', date: 'Today, 13:45', validator: 'Auto-analysis' },
+    { id: 'LAB-8910', test: 'Urinalysis', patient: 'James Okafor', status: 'Completed', result: 'Normal parameters', date: 'Yesterday, 10:20', validator: 'Dr. Adeyemi' },
+    { id: 'LAB-8842', test: 'Liver Function Test', patient: 'Chioma Adeleke', status: 'Awaiting Sample', result: 'Awaiting collection', date: 'Today, 09:00', validator: 'Central Lab' }
   ];
 
   const filtered = labInvestigations.filter(item => 
@@ -24,113 +27,109 @@ export default function InvestigationsView({ searchValue }: InvestigationsViewPr
     item.result.toLowerCase().includes(searchValue.toLowerCase())
   );
 
+  const statusCounts = {
+    completed: labInvestigations.filter(i => i.status === 'Completed').length,
+    processing: labInvestigations.filter(i => i.status === 'Processing').length,
+    awaiting: labInvestigations.filter(i => i.status === 'Awaiting Sample').length,
+  };
+
   return (
-    <div className="space-y-4 select-none h-full flex flex-col">
+    <div className="space-y-5 select-none flex flex-col h-full">
       
-      {/* Telemetry Header */}
-      <div className="bg-white border border-slate-300 flex flex-col sm:flex-row">
-        <div className="p-3 border-b sm:border-b-0 sm:border-r border-slate-300 bg-slate-50 flex-1">
-          <h3 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-            Laboratory & Investigations Hub
-          </h3>
-          <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
-            Diagnostics tracking and electronic test validations
-          </p>
+      {/* Header */}
+      <div className="card-base overflow-hidden flex flex-col sm:flex-row">
+        <div className="p-4 border-b sm:border-b-0 sm:border-r border-border flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <FlaskConical className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-bold text-text-primary">Investigations Hub</h3>
+          </div>
+          <p className="text-[10px] text-text-secondary font-medium">Lab orders, diagnostics & test validations</p>
         </div>
 
-        {/* Dense Stats Ribbon */}
-        <div className="flex divide-x divide-slate-300 bg-white">
-          <div className="p-3 w-32 flex flex-col justify-center">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <CheckCircle2 className="w-3 h-3 text-green-600" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Completed</span>
-            </div>
-            <div className="text-xl font-bold text-slate-900 leading-none">42</div>
-          </div>
-          <div className="p-3 w-32 flex flex-col justify-center">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <Clock className="w-3 h-3 text-amber-500" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Processing</span>
-            </div>
-            <div className="text-xl font-bold text-slate-900 leading-none">8</div>
-          </div>
-          <div className="p-3 w-32 flex flex-col justify-center bg-red-50/50">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <AlertCircle className="w-3 h-3 text-red-600" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-red-800">Critical</span>
-            </div>
-            <div className="text-xl font-bold text-red-600 leading-none">1</div>
-          </div>
+        <div className="flex divide-x divide-border">
+          {[
+            { label: 'Completed', value: statusCounts.completed, icon: CheckCircle2, color: 'success' },
+            { label: 'Processing', value: statusCounts.processing, icon: Clock, color: 'warning' },
+            { label: 'Awaiting', value: statusCounts.awaiting, icon: AlertCircle, color: 'accent' },
+          ].map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <div key={idx} className="p-4 flex items-center gap-3 min-w-[130px]">
+                <div className={`p-2 rounded-xl bg-${stat.color}/10`}>
+                  <Icon className={`w-4 h-4 text-${stat.color}`} />
+                </div>
+                <div>
+                  <p className="text-lg font-extrabold text-text-primary leading-none">{stat.value}</p>
+                  <p className="text-[9px] text-text-secondary font-medium mt-0.5">{stat.label}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Lab Order Registry Data Table */}
-      <div className="bg-white border border-slate-300 flex-1 overflow-hidden flex flex-col">
-        <div className="px-3 py-2 border-b border-slate-300 bg-slate-50 flex justify-between items-center">
-          <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Electronic Lab Order Registry</h4>
+      {/* Lab Results */}
+      <div className="card-base overflow-hidden flex-1">
+        <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
+          <Stethoscope className="w-3.5 h-3.5 text-primary" />
+          <h4 className="text-xs font-bold text-text-primary">Lab Order Registry</h4>
         </div>
 
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-800 text-slate-300 sticky top-0">
-              <tr>
-                <th className="px-3 py-2 text-[9px] font-black uppercase tracking-widest border-b border-slate-700">Reference ID</th>
-                <th className="px-3 py-2 text-[9px] font-black uppercase tracking-widest border-b border-slate-700">Investigation</th>
-                <th className="px-3 py-2 text-[9px] font-black uppercase tracking-widest border-b border-slate-700">Patient</th>
-                <th className="px-3 py-2 text-[9px] font-black uppercase tracking-widest border-b border-slate-700">Lab Result / Validation</th>
-                <th className="px-3 py-2 text-[9px] font-black uppercase tracking-widest border-b border-slate-700 text-center">Status</th>
-                <th className="px-3 py-2 text-[9px] font-black uppercase tracking-widest border-b border-slate-700 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.map((item, index) => {
-                const isComp = item.status === 'Completed';
-                const isProc = item.status === 'Processing';
-                return (
-                  <tr key={index} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-3 py-2 align-top border-r border-slate-100">
-                      <div className="font-mono text-[10px] font-bold text-slate-800">{item.id}</div>
-                      <div className="text-[9px] font-mono text-slate-500 mt-0.5">{item.date}</div>
-                    </td>
-                    <td className="px-3 py-2 align-top border-r border-slate-100 w-48">
-                      <div className="font-bold text-[11px] text-slate-900 uppercase">{item.test}</div>
-                    </td>
-                    <td className="px-3 py-2 align-top border-r border-slate-100 w-40">
-                      <div className="font-bold text-[10px] text-slate-800 uppercase">{item.patient}</div>
-                    </td>
-                    <td className="px-3 py-2 align-top border-r border-slate-100">
-                      <div className="font-medium text-[10px] text-slate-800">{item.result}</div>
-                      <div className="text-[9px] font-mono text-slate-500 mt-0.5">Validated By: {item.validator}</div>
-                    </td>
-                    <td className="px-3 py-2 align-top border-r border-slate-100 text-center w-32">
-                      <span className={`inline-block w-full text-center px-1.5 py-0.5 border text-[9px] font-black uppercase tracking-widest ${
-                        isComp 
-                          ? 'bg-green-50 border-green-200 text-green-700' 
-                          : isProc 
-                            ? 'bg-amber-50 border-amber-200 text-amber-700' 
-                            : 'bg-slate-50 border-slate-200 text-slate-600'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 align-top text-right w-24">
-                      <button className="px-2 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-800 hover:text-white hover:border-slate-800 rounded-sm font-bold text-[9px] uppercase tracking-wider transition-colors inline-flex items-center gap-1">
-                        <Download className="w-3 h-3" /> Fetch
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                    No investigations match criteria.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="divide-y divide-border-light">
+          {filtered.map((item, idx) => {
+            const isComp = item.status === 'Completed';
+            const isProc = item.status === 'Processing';
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.08 }}
+                className="px-5 py-4 flex items-center gap-4 hover:bg-bg-main/50 transition-colors"
+              >
+                <div className={`p-2.5 rounded-xl ${
+                  isComp ? 'bg-success/10' : isProc ? 'bg-warning/10' : 'bg-bg-main'
+                }`}>
+                  {isComp ? <CheckCircle2 className="w-4 h-4 text-success" />
+                    : isProc ? <Clock className="w-4 h-4 text-warning" />
+                    : <AlertCircle className="w-4 h-4 text-text-light" />}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h5 className="text-xs font-bold text-text-primary">{item.test}</h5>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                      isComp ? 'bg-success/10 text-success' 
+                      : isProc ? 'bg-warning/10 text-warning'
+                      : 'bg-bg-main text-text-light'
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-text-secondary">{item.result}</p>
+                  <p className="text-[10px] text-text-light mt-0.5">
+                    {item.patient} • {item.date} • {item.validator}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-text-light">{item.id}</span>
+                  {isComp && (
+                    <button className="p-2 rounded-xl border border-border hover:bg-primary/5 hover:border-primary/20 text-text-secondary hover:text-primary transition-all cursor-pointer">
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
+
+        {filtered.length === 0 && (
+          <div className="p-12 text-center text-xs text-text-secondary">
+            No investigations match your search.
+          </div>
+        )}
       </div>
     </div>
   );

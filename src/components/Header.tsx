@@ -1,112 +1,96 @@
-import React, { useState } from 'react';
-import { Search, Bell, User, ArrowLeft } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import React from 'react';
+import { Search, Bell, ArrowLeft, Plus } from 'lucide-react';
+import { User } from '../types';
 
 interface HeaderProps {
   title: string;
-  subtitle?: string; // Kept for compatibility but unused
+  subtitle?: string;
   showBackButton?: boolean;
   onBack?: () => void;
   searchPlaceholder?: string;
   searchValue: string;
   onSearchChange: (val: string) => void;
-  currentRole: { name: string; title: string; avatarUrl: string; };
-  onRoleClick?: () => void;
+  user: User;
   rightActions?: React.ReactNode;
 }
 
 export default function Header({
   title,
+  subtitle,
   showBackButton = false,
   onBack,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = "Search patients, codes, diagnostics...",
   searchValue,
   onSearchChange,
-  currentRole,
-  onRoleClick,
+  user,
   rightActions
 }: HeaderProps) {
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-
   return (
-    <header className="fixed top-0 right-0 w-[calc(100%-208px)] h-14 bg-white z-40 px-6 border-b border-slate-200 flex items-center justify-between">
-      {/* Left side: Navigation or Title */}
-      <div className="flex items-center gap-4 flex-1">
+    <header className="fixed top-0 right-0 w-[calc(100%-224px)] h-16 bg-white/80 backdrop-blur-xl z-40 px-6 border-b border-border flex items-center justify-between">
+      {/* Left: Title */}
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         {showBackButton && (
           <button 
             onClick={onBack}
-            className="p-1 hover:bg-slate-100 rounded transition-colors text-slate-500 hover:text-slate-800"
+            className="p-1.5 hover:bg-bg-main rounded-lg transition-colors text-text-secondary hover:text-text-primary cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
         )}
-        <h2 className="text-sm font-bold text-slate-800 tracking-tight">
-          {title}
-        </h2>
+        <img
+          src="/clinix-logo.jpg"
+          alt="Clinix Logo"
+          className="w-8 h-8 rounded-xl object-cover"
+        />
+        <div className="min-w-0">
+          <h2 className="text-sm font-bold text-text-primary tracking-tight truncate">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-[10px] text-text-secondary font-medium truncate">{subtitle}</p>
+          )}
+        </div>
       </div>
 
       {/* Center: Search */}
-      <div className="flex-1 flex justify-center max-w-md hidden md:flex relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
-        <input 
-          type="text"
-          placeholder={searchPlaceholder}
-          value={searchValue}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full bg-slate-50 border border-slate-200 rounded text-xs pl-8 pr-3 py-1.5 focus:outline-none focus:border-blue-400"
-        />
+      <div className="flex-1 flex justify-center max-w-md hidden md:flex">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-light w-3.5 h-3.5" />
+          <input 
+            type="text"
+            placeholder={searchPlaceholder}
+            value={searchValue}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full bg-bg-main border border-border rounded-xl text-xs pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 transition-all text-text-primary placeholder:text-text-light"
+          />
+        </div>
       </div>
 
-      {/* Right side: Actions & User */}
-      <div className="flex items-center gap-4 flex-1 justify-end">
+      {/* Right: Actions */}
+      <div className="flex items-center gap-3 flex-1 justify-end">
         {rightActions && (
           <div className="flex items-center gap-2 hidden lg:flex">
             {rightActions}
           </div>
         )}
 
-        <button className="text-slate-400 hover:text-slate-600 relative">
+        <button className="p-2 rounded-xl hover:bg-bg-main text-text-light hover:text-text-secondary relative transition-all cursor-pointer">
           <Bell className="w-4 h-4" />
-          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent rounded-full border-2 border-white"></span>
         </button>
 
-        <div className="relative">
-          <div 
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-2 pl-4 border-l border-slate-200 cursor-pointer"
-          >
-            <div className="text-right hidden sm:block">
-              <p className="font-bold text-[11px] text-slate-800 leading-none">{currentRole.name}</p>
-              <p className="text-[9px] text-slate-500 font-semibold uppercase">{currentRole.title.split(' ')[0]}</p>
-            </div>
-            <img 
-              src={currentRole.avatarUrl} 
-              alt={currentRole.name}
-              className="w-7 h-7 rounded-full object-cover border border-slate-200"
-            />
+        <div className="flex items-center gap-2.5 pl-3 border-l border-border">
+          <div className="text-right hidden sm:block">
+            <p className="font-semibold text-[11px] text-text-primary leading-none">
+              {user.firstName} {user.lastName}
+            </p>
+            <p className="text-[9px] text-text-secondary font-medium mt-0.5">
+              {user.hospital}
+            </p>
           </div>
-
-          <AnimatePresence>
-            {showProfileMenu && (
-              <motion.div 
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 5 }}
-                className="absolute right-0 mt-2 w-48 bg-white rounded shadow-md border border-slate-200 z-50 p-2"
-              >
-                <button 
-                  onClick={() => {
-                    if(onRoleClick) onRoleClick();
-                    setShowProfileMenu(false);
-                  }}
-                  className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-50 text-xs font-semibold text-slate-600 flex items-center gap-2"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  Switch Perspective
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="w-8 h-8 rounded-xl gradient-primary flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-primary/20">
+            {user.firstName[0]}{user.lastName[0]}
+          </div>
         </div>
       </div>
     </header>

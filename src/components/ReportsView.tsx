@@ -3,8 +3,12 @@ import {
   TrendingUp, 
   CheckSquare, 
   FileDown, 
-  BarChart3 
+  BarChart3,
+  AlertTriangle,
+  ShieldCheck,
+  FileText
 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface ReportsViewProps {
   searchValue: string;
@@ -12,118 +16,135 @@ interface ReportsViewProps {
 
 export default function ReportsView({ searchValue }: ReportsViewProps) {
   const complianceItems = [
-    { title: 'Electronic Case-Signature Verification', status: 'Compliant', desc: 'All diagnostic files are signed off with cryptographic keys.' },
-    { title: 'Pathology Sample Matching Protocol', status: 'Compliant', desc: 'Matched patient identification bar code logs with blood tests.' },
-    { title: 'Contraindicated Drug-Interaction Monitoring', status: 'Requires Review', desc: 'Found 1 instance where NSAIDs and adverse records crossed paths.' },
-    { title: 'Prenatal Screenings Interval Compliance', status: 'Compliant', desc: 'All high-risk mother registrations are successfully processed.' }
+    { title: 'Case-Signature Verification', status: 'Compliant', desc: 'All diagnostic files are cryptographically signed by attending physician.' },
+    { title: 'Pathology Sample Matching', status: 'Compliant', desc: 'Patient identification correctly matched with blood test specimens.' },
+    { title: 'Drug-Interaction Monitoring', status: 'Review Needed', desc: '1 instance of potential NSAID contraindication detected in recent cases.' },
+    { title: 'Prenatal Screening Intervals', status: 'Compliant', desc: 'All high-risk prenatal screenings completed within required timeframes.' }
+  ];
+
+  const stats = [
+    { label: 'Overall Efficacy', value: '94.2%', trend: '+2.1%', trendColor: 'text-success' },
+    { label: 'Unresolved Flags', value: '1', trend: 'Pending', trendColor: 'text-accent' },
+    { label: 'Diagnostic Audits', value: '1,240', trend: 'Logged', trendColor: 'text-text-light' },
+    { label: 'Regulatory Index', value: 'A+', trend: 'Pass', trendColor: 'text-success' },
   ];
 
   return (
-    <div className="space-y-4 select-none flex flex-col h-full">
-      {/* Telemetry Header */}
-      <div className="bg-white border border-slate-300 flex flex-col sm:flex-row">
-        <div className="p-3 border-b sm:border-b-0 sm:border-r border-slate-300 bg-slate-50 flex-1">
-          <h3 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-            Clinical Audit & Performance Reports
-          </h3>
-          <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
-            Compliance telemetry and residency validation checklists
-          </p>
+    <div className="space-y-5 select-none flex flex-col h-full">
+      {/* Header & Stats */}
+      <div className="card-base overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <FileText className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-bold text-text-primary">Clinical Audit & Performance Reports</h3>
+          </div>
+          <p className="text-[10px] text-text-secondary font-medium">Compliance tracking and quality validation</p>
         </div>
 
-        {/* Dense Stats Ribbon */}
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-slate-300 bg-white">
-          <div className="p-3 flex flex-col justify-center">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1">Overall Efficacy</span>
-            <div className="flex items-end gap-2">
-              <span className="text-xl font-bold text-slate-900 leading-none">94.2%</span>
-              <span className="text-[9px] font-black text-green-600 mb-0.5">+2.1%</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="p-4">
+              <p className="text-[10px] text-text-secondary font-medium mb-1">{stat.label}</p>
+              <div className="flex items-end gap-2">
+                <span className="text-xl font-extrabold text-text-primary leading-none">{stat.value}</span>
+                <span className={`text-[10px] font-bold ${stat.trendColor} mb-0.5`}>{stat.trend}</span>
+              </div>
             </div>
-          </div>
-          <div className="p-3 flex flex-col justify-center bg-red-50/50">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-red-800 mb-1">Unresolved Flags</span>
-            <div className="flex items-end gap-2">
-              <span className="text-xl font-bold text-red-600 leading-none">1</span>
-              <span className="text-[9px] font-black text-red-500 mb-0.5">Pending</span>
-            </div>
-          </div>
-          <div className="p-3 flex flex-col justify-center">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1">Diagnostic Audits</span>
-            <div className="flex items-end gap-2">
-              <span className="text-xl font-bold text-slate-900 leading-none">1,240</span>
-              <span className="text-[9px] font-black text-slate-400 mb-0.5">Logged</span>
-            </div>
-          </div>
-          <div className="p-3 flex flex-col justify-center">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1">Regulatory Index</span>
-            <div className="flex items-end gap-2">
-              <span className="text-xl font-bold text-green-600 leading-none">A+</span>
-              <span className="text-[9px] font-black text-green-500 mb-0.5">Pass</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
-        {/* Compliance Checklist Panel */}
-        <div className="bg-white border border-slate-300 flex flex-col">
-          <div className="px-3 py-2 border-b border-slate-300 bg-slate-50 flex justify-between items-center">
-            <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <CheckSquare className="w-3.5 h-3.5" /> Regulatory Checklists
-            </h4>
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Live Audit</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 flex-1">
+        {/* Compliance Checklist */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card-base overflow-hidden"
+        >
+          <div className="px-5 py-3.5 border-b border-border flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <CheckSquare className="w-3.5 h-3.5 text-primary" />
+              <h4 className="text-xs font-bold text-text-primary">Regulatory Checklists</h4>
+            </div>
+            <span className="text-[9px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full">Live Audit</span>
           </div>
 
-          <div className="divide-y divide-slate-100 flex-1">
+          <div className="divide-y divide-border-light">
             {complianceItems.map((item, idx) => {
               const isComp = item.status === 'Compliant';
               return (
-                <div key={idx} className="p-3 hover:bg-slate-50 transition-colors">
-                  <div className="flex justify-between items-start gap-4 mb-1">
-                    <h5 className="font-bold text-[11px] text-slate-900 uppercase tracking-wide leading-tight">{item.title}</h5>
-                    <span className={`inline-block whitespace-nowrap px-1.5 py-0.5 border text-[9px] font-black uppercase tracking-widest ${
-                      isComp ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'
+                <div key={idx} className="p-4 hover:bg-bg-main/50 transition-colors">
+                  <div className="flex justify-between items-start gap-3 mb-1.5">
+                    <div className="flex items-start gap-2.5">
+                      {isComp ? (
+                        <ShieldCheck className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                      )}
+                      <h5 className="text-xs font-bold text-text-primary">{item.title}</h5>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold whitespace-nowrap ${
+                      isComp ? 'bg-success/10 text-success' : 'bg-accent/10 text-accent'
                     }`}>
                       {item.status}
                     </span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-medium">{item.desc}</p>
+                  <p className="text-[10px] text-text-secondary pl-6.5 ml-[26px]">{item.desc}</p>
                 </div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Efficacy trends mock panel */}
-        <div className="bg-white border border-slate-300 flex flex-col">
-          <div className="px-3 py-2 border-b border-slate-300 bg-slate-50">
-            <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <BarChart3 className="w-3.5 h-3.5" /> Core Outcome Analytics
-            </h4>
+        {/* Analytics Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card-base overflow-hidden flex flex-col"
+        >
+          <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
+            <BarChart3 className="w-3.5 h-3.5 text-primary" />
+            <h4 className="text-xs font-bold text-text-primary">Outcome Analytics</h4>
           </div>
           
-          <div className="p-3">
-            <p className="text-[10px] text-slate-600 font-medium leading-relaxed">
-              Residency outcome records matched with AI prediction values suggest a <span className="font-bold text-slate-900">+12% improvement</span> in diagnostic speed across the primary intake.
+          <div className="p-5">
+            <p className="text-[11px] text-text-secondary leading-relaxed mb-4">
+              AI-matched residency outcome records show a <span className="font-bold text-primary">+12% improvement</span> in diagnostic speed and 
+              <span className="font-bold text-success"> 94% accuracy</span> across primary intake encounters this quarter.
             </p>
+
+            {/* Bar Chart */}
+            <div className="space-y-3">
+              {[
+                { label: 'Q1 2026', value: 72 },
+                { label: 'Q2 2026', value: 85 },
+                { label: 'Q3 2026', value: 91 },
+                { label: 'Q4 2026', value: 94 },
+              ].map((bar, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <span className="text-[10px] font-semibold text-text-secondary w-16">{bar.label}</span>
+                  <div className="flex-1 h-3 bg-bg-main rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${bar.value}%` }}
+                      transition={{ delay: 0.3 + idx * 0.1, duration: 0.8 }}
+                      className="h-full rounded-full gradient-primary"
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-text-primary w-8 text-right">{bar.value}%</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Very flat bar chart mockup */}
-          <div className="flex-1 flex items-end px-3 pb-3 gap-1 mt-2 border-b border-slate-100">
-            <div className="flex-1 bg-slate-200 h-1/3 hover:bg-slate-800 transition-colors"></div>
-            <div className="flex-1 bg-slate-200 h-1/2 hover:bg-slate-800 transition-colors"></div>
-            <div className="flex-1 bg-slate-200 h-2/5 hover:bg-slate-800 transition-colors"></div>
-            <div className="flex-1 bg-slate-200 h-3/4 hover:bg-slate-800 transition-colors"></div>
-            <div className="flex-1 bg-slate-200 h-2/3 hover:bg-slate-800 transition-colors"></div>
-            <div className="flex-1 bg-slate-800 h-full"></div>
-          </div>
-
-          <div className="p-2 bg-slate-50 flex justify-center">
-            <button className="text-[9px] font-bold text-slate-700 uppercase tracking-widest hover:underline cursor-pointer flex items-center gap-1.5 w-full justify-center">
-              <FileDown className="w-3 h-3" /> Fetch Quality Audits
+          <div className="mt-auto px-5 py-3 border-t border-border flex justify-center">
+            <button className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1.5 cursor-pointer">
+              <FileDown className="w-3.5 h-3.5" /> Download Full Report
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
