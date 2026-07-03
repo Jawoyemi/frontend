@@ -17,6 +17,7 @@ interface SidebarProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
   user: User;
+  pendingReviewCount?: number;
   onOpenSettings?: () => void;
   onOpenSupport?: () => void;
   onLogout: () => void;
@@ -26,6 +27,7 @@ export default function Sidebar({
   currentTab, 
   setCurrentTab, 
   user, 
+  pendingReviewCount = 0,
   onOpenSettings, 
   onOpenSupport,
   onLogout 
@@ -52,23 +54,19 @@ export default function Sidebar({
       {/* Logo & Brand */}
       <div className="h-16 flex items-center px-5 border-b border-white/5">
         <img 
-          src="/clinix-logo.jpg" 
+          src="/logo.png" 
           alt="Clinix Logo" 
           className="w-8 h-8 object-cover rounded-lg mr-3"
         />
         <div>
-          <span className="font-extrabold text-sm tracking-tight text-white">Clinix</span>
-          <div className="flex items-center gap-1">
-            <Zap className="w-2.5 h-2.5 text-primary-light" />
-            <span className="text-[9px] font-medium text-primary-light tracking-wide">Sovereign AI</span>
-          </div>
+          <span className="font-extrabold text-sm tracking-tight text-white uppercase">Clinix OS</span>
         </div>
       </div>
 
       {/* Navigation */}
       <div className="flex-1 py-5 flex flex-col gap-0.5 px-3 overflow-y-auto thin-scrollbar">
-        <span className="px-3 text-[10px] font-semibold uppercase text-white/25 tracking-widest mb-2">
-          Navigation
+        <span className="px-3 text-[10px] font-bold uppercase text-white/40 tracking-widest mb-2 mt-2">
+          Main Menu
         </span>
         {tabs.map(tab => {
           const Icon = tab.icon;
@@ -81,15 +79,15 @@ export default function Sidebar({
               onClick={() => setCurrentTab(tab.id)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 isActive 
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                  ? 'bg-primary text-white' 
                   : 'hover:bg-white/5 text-white/50 hover:text-white/80'
               }`}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
               <span>{tab.label}</span>
-              {tab.id === 'case-review' && (
+              {tab.id === 'case-review' && pendingReviewCount > 0 && (
                 <span className="ml-auto bg-accent text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                  3
+                  {pendingReviewCount}
                 </span>
               )}
             </button>
@@ -98,25 +96,13 @@ export default function Sidebar({
       </div>
 
       {/* User Profile & System */}
-      <div className="py-4 px-3 border-t border-white/5">
-        {/* User Card */}
-        <div className="px-3 py-2.5 rounded-xl bg-white/5 mb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white font-bold text-xs">
-              {user.firstName[0]}{user.lastName[0]}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate">
-                {user.firstName} {user.lastName}
-              </p>
-              <p className="text-[10px] text-white/40 font-medium truncate">
-                {user.role === 'student' ? `${user.yearOfStudy}00L Student` : 'Supervisor'}
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="py-4 px-3 border-t border-white/5 flex flex-col gap-0.5">
+        <span className="px-3 text-[10px] font-bold uppercase text-white/40 tracking-widest mb-2">
+          System
+        </span>
 
-        <div className="flex flex-col gap-0.5">
+
+
           <button 
             onClick={onOpenSettings} 
             className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-white/5 text-white/40 hover:text-white/70 cursor-pointer transition-all"
@@ -133,12 +119,11 @@ export default function Sidebar({
           </button>
           <button 
             onClick={onLogout}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-danger/10 text-white/40 hover:text-danger cursor-pointer transition-all mt-1"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-white/5 text-white/40 hover:text-white/70 cursor-pointer transition-all mt-1"
           >
             <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>Sign Out</span>
+            <span>Logout</span>
           </button>
-        </div>
       </div>
     </div>
   );

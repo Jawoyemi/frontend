@@ -26,7 +26,7 @@ export default function Header({
   rightActions
 }: HeaderProps) {
   return (
-    <header className="fixed top-0 right-0 w-[calc(100%-224px)] h-16 bg-white/80 backdrop-blur-xl z-40 px-6 border-b border-border flex items-center justify-between">
+    <header className="fixed top-0 right-0 w-[calc(100%-224px)] h-16 bg-white z-40 px-6 border-b border-border flex items-center justify-between">
       {/* Left: Title */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {showBackButton && (
@@ -38,7 +38,7 @@ export default function Header({
           </button>
         )}
         <img
-          src="/clinix-logo.jpg"
+          src="/logo.png"
           alt="Clinix Logo"
           className="w-8 h-8 rounded-xl object-cover"
         />
@@ -88,7 +88,7 @@ export default function Header({
               {user.hospital}
             </p>
           </div>
-          <div className="w-8 h-8 rounded-xl gradient-primary flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-primary/20">
+          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-xs">
             {user.firstName[0]}{user.lastName[0]}
           </div>
         </div>

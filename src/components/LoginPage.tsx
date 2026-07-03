@@ -1,227 +1,261 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { Eye, EyeOff, ArrowRight, Shield, Brain, Award } from 'lucide-react';
-import { User } from '../types';
-import { demoStudent, demoSupervisor } from '../data';
+import { Activity, ArrowLeft, Eye, EyeOff, Shield, Stethoscope, User as UserIcon, Users } from 'lucide-react';
+import EmailVerificationPage from './EmailVerificationPage';
+import { login, register, resendVerification, verifyEmail } from '../lib/api';
+import { mapUser, User } from '../types';
 
 interface LoginPageProps {
-  onLogin: (user: User) => void;
+  onLogin: (user: User, token: string) => void;
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
+  const [view, setView] = useState<'role' | 'login' | 'register' | 'verification'>('role');
+  const [role, setRole] = useState<'student' | 'supervisor' | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [yearOfStudy, setYearOfStudy] = useState('500');
+  const [matricNumber, setMatricNumber] = useState('');
+  const [hospital, setHospital] = useState('');
+  const [mdcnRegNo, setMdcnRegNo] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRoleSelect = (selectedRole: 'student' | 'supervisor') => {
+    setRole(selectedRole);
+    setView('login');
+    setError('');
+  };
+
+  const handleLoginSubmit = async () => {
+    if (!role) return;
     setError('');
     setIsLoading(true);
-
-    setTimeout(() => {
-      if (email === 'adeola@clinix.ng' && password === 'password') {
-        onLogin(demoStudent);
-      } else if (email === 'okonkwo@clinix.ng' && password === 'password') {
-        onLogin(demoSupervisor);
-      } else {
-        setError('Invalid credentials. Try adeola@clinix.ng or okonkwo@clinix.ng');
-        setIsLoading(false);
+    try {
+      const tokenResponse = await login({ email, password });
+      const userModule = await import('../lib/api');
+      const apiUser = await userModule.getMe(tokenResponse.access_token);
+      if (apiUser.role !== role) {
+        throw new Error(`This account is registered as ${apiUser.role}. Please sign in through the matching role.`);
       }
-    }, 800);
+      onLogin(mapUser(apiUser), tokenResponse.access_token);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to sign in.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async () => {
+    if (!role) return;
+    setError('');
+    setIsLoading(true);
+    try {
+      await register({
+        email,
+        password,
+        first_name: firstName,
+        last_name: lastName,
+        role,
+        year_of_study: role === 'student' ? Number(yearOfStudy) : undefined,
+        matric_number: role === 'student' ? matricNumber : undefined,
+        hospital,
+        mdcn_reg_no: role === 'supervisor' ? mdcnRegNo : undefined,
+      });
+      setView('verification');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to create account.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerificationSubmit = async (code: string) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await verifyEmail({ email, code });
+      const tokenResponse = await login({ email, password });
+      const userModule = await import('../lib/api');
+      const apiUser = await userModule.getMe(tokenResponse.access_token);
+      if (apiUser.role !== role) {
+        throw new Error(`This account is registered as ${apiUser.role}. Please sign in through the matching role.`);
+      }
+      onLogin(mapUser(apiUser), tokenResponse.access_token);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to verify email.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await resendVerification(email);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to resend verification code.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const features = [
-    { icon: Brain, title: 'AI-Guided Diagnosis', desc: 'Real-time clinical analysis powered by sovereign AI agents' },
-    { icon: Shield, title: 'Verified Credentials', desc: 'Cryptographically signed clinical encounters and portfolio' },
-    { icon: Award, title: 'MCP Action Skills', desc: 'Automated drug checks, lab orders, and follow-up scheduling' },
+    { icon: Activity, title: 'Clinical Encounters', desc: 'Streamlined intake, vitals, and diagnostics tracking.' },
+    { icon: Shield, title: 'Verified Credentials', desc: 'Securely logged student encounters and supervisor reviews.' },
+    { icon: Users, title: 'Patient Management', desc: 'Integrated patient queuing and records management system.' },
   ];
 
-  return (
-    <div className="min-h-screen login-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-      </div>
+  if (view === 'verification') {
+    return (
+      <EmailVerificationPage
+        email={email}
+        error={error}
+        loading={isLoading}
+        onBack={() => setView('register')}
+        onVerify={handleVerificationSubmit}
+        onResend={handleResendVerification}
+      />
+    );
+  }
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-        {/* Left Side - Branding */}
-        <motion.div 
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-white space-y-8 hidden lg:block"
-        >
+  return (
+    <div className="min-h-screen bg-bg-main flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center bg-white rounded-xl shadow-sm border border-border overflow-hidden min-h-[600px]">
+        <div className="bg-sidebar-bg text-white h-full p-8 lg:p-12 flex-col justify-center space-y-10 hidden lg:flex">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <img 
-                src="/clinix-logo.jpg" 
-                alt="Clinix Logo" 
-                className="w-14 h-14 object-cover rounded-xl border-2 border-white/20 shadow-lg"
-              />
+              <img src="/logo.png" alt="Clinix Logo" className="w-12 h-12 object-cover rounded shadow-sm" />
               <div>
-                <h1 className="text-3xl font-extrabold tracking-tight">Clinix</h1>
-                <p className="text-sm font-medium text-white/60 tracking-wide">Sovereign Clinical Intelligence</p>
+                <h1 className="text-2xl font-bold tracking-tight">Clinix</h1>
+                <p className="text-xs font-semibold text-white/70 uppercase tracking-widest mt-0.5">Clinical Dashboard</p>
               </div>
             </div>
-            <p className="text-lg text-white/80 leading-relaxed max-w-md">
-              Every supervised patient encounter becomes verified competence for the medical student 
-              and a portable health record for the patient.
+            <p className="text-sm text-white/80 leading-relaxed max-w-sm">
+              A comprehensive system for tracking supervised patient encounters, verifying medical competence, and managing care workflows.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {features.map((feature, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + idx * 0.15, duration: 0.5 }}
-                className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors"
-              >
-                <div className="p-2.5 rounded-xl bg-primary/20 flex-shrink-0">
-                  <feature.icon className="w-5 h-5 text-primary-light" />
+          <div className="space-y-6">
+            {features.map((feature) => (
+              <div key={feature.title} className="flex items-start gap-4">
+                <div className="p-2 bg-white/10 rounded flex-shrink-0">
+                  <feature.icon className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">{feature.title}</h3>
-                  <p className="text-xs text-white/50 mt-0.5 leading-relaxed">{feature.desc}</p>
+                  <h3 className="font-bold text-[13px] text-white uppercase tracking-wide">{feature.title}</h3>
+                  <p className="text-xs text-white/60 mt-1 leading-relaxed max-w-xs">{feature.desc}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
+        </div>
 
-          <p className="text-xs text-white/30 font-medium">
-            Partnered with Chekk Inc. — Building the clinical layer Nigerian medical education has never had.
-          </p>
-        </motion.div>
-
-        {/* Right Side - Login Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="w-full max-w-md mx-auto"
-        >
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/20 p-8 border border-white/50">
-            {/* Mobile Logo */}
-            <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
-              <img 
-                src="/clinix-logo.jpg" 
-                alt="Clinix Logo" 
-                className="w-10 h-10 object-cover rounded-lg"
-              />
-              <div>
-                <h1 className="text-xl font-extrabold text-text-primary tracking-tight">Clinix</h1>
-                <p className="text-[10px] font-medium text-text-secondary">Sovereign Clinical Intelligence</p>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <h2 className="text-xl font-extrabold text-text-primary tracking-tight">Welcome back</h2>
-              <p className="text-sm text-text-secondary mt-1">Sign in to your clinical dashboard</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1.5" htmlFor="login-email">
-                  Email Address
-                </label>
-                <input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="adeola@clinix.ng"
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-bg-main text-sm text-text-primary placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1.5" htmlFor="login-password">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="login-password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-bg-main text-sm text-text-primary placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-10"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light hover:text-text-secondary transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-danger font-medium bg-danger/5 px-3 py-2 rounded-lg border border-danger/10"
-                >
-                  {error}
-                </motion.p>
-              )}
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                id="login-submit"
-                className="w-full py-3.5 rounded-xl gradient-primary text-white font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/25 transition-all disabled:opacity-70 cursor-pointer"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>
-                    Sign In
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Demo Accounts */}
-            <div className="mt-6 pt-5 border-t border-border">
-              <p className="text-[10px] font-semibold text-text-light uppercase tracking-wider mb-3">Demo Accounts</p>
-              <div className="space-y-2">
-                <button
-                  onClick={() => { setEmail('adeola@clinix.ng'); setPassword('password'); }}
-                  className="w-full text-left px-3 py-2.5 rounded-xl bg-bg-main hover:bg-primary/5 border border-border hover:border-primary/20 transition-all cursor-pointer group"
-                >
-                  <p className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors">
-                    Ademilua Adeola
-                    <span className="text-text-light font-medium ml-1">— 500L Student</span>
-                  </p>
-                  <p className="text-[10px] text-text-light font-mono mt-0.5">adeola@clinix.ng</p>
-                </button>
-                <button
-                  onClick={() => { setEmail('okonkwo@clinix.ng'); setPassword('password'); }}
-                  className="w-full text-left px-3 py-2.5 rounded-xl bg-bg-main hover:bg-primary/5 border border-border hover:border-primary/20 transition-all cursor-pointer group"
-                >
-                  <p className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors">
-                    Dr. Chukwuemeka Okonkwo
-                    <span className="text-text-light font-medium ml-1">— Supervisor</span>
-                  </p>
-                  <p className="text-[10px] text-text-light font-mono mt-0.5">okonkwo@clinix.ng</p>
-                </button>
-              </div>
-            </div>
+        <div className="p-8 lg:p-12 lg:pl-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
+          <div className="lg:hidden flex items-center gap-3 mb-8">
+            <img src="/logo.png" alt="Clinix Logo" className="w-10 h-10 object-cover rounded" />
+            <h1 className="text-xl font-bold tracking-tight">Clinix</h1>
           </div>
 
-          <p className="text-center text-[10px] text-white/30 mt-4 font-medium">
-            Clinix v2.1 — Hackathon Edition • LAUTECH Teaching Hospital
-          </p>
-        </motion.div>
+          {view === 'role' && (
+            <div className="space-y-6">
+              <div className="mb-8">
+                <h2 className="text-lg font-bold text-text-primary">Select Your Role</h2>
+                <p className="text-xs text-text-secondary mt-1">Choose how you want to access the platform.</p>
+              </div>
+              <button onClick={() => handleRoleSelect('student')} className="w-full flex items-center gap-4 p-5 rounded-lg border border-border bg-bg-main hover:border-primary transition-all text-left cursor-pointer group">
+                <div className="p-3 bg-white rounded shadow-sm group-hover:text-primary"><UserIcon className="w-5 h-5" /></div>
+                <div>
+                  <h3 className="font-bold text-sm text-text-primary">Medical Student</h3>
+                  <p className="text-[10px] text-text-secondary mt-0.5">Log clinical encounters and build portfolio.</p>
+                </div>
+              </button>
+              <button onClick={() => handleRoleSelect('supervisor')} className="w-full flex items-center gap-4 p-5 rounded-lg border border-border bg-bg-main hover:border-primary transition-all text-left cursor-pointer group">
+                <div className="p-3 bg-white rounded shadow-sm group-hover:text-primary"><Stethoscope className="w-5 h-5" /></div>
+                <div>
+                  <h3 className="font-bold text-sm text-text-primary">Clinical Supervisor</h3>
+                  <p className="text-[10px] text-text-secondary mt-0.5">Review, validate, and sign student encounters.</p>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {view === 'login' && (
+            <div>
+              <button onClick={() => setView('role')} className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-6 flex items-center gap-1 hover:text-text-primary cursor-pointer">
+                <ArrowLeft className="w-3 h-3" /> Back to roles
+              </button>
+              <div className="mb-8">
+                <h2 className="text-lg font-bold text-text-primary">{role === 'student' ? 'Student Sign In' : 'Supervisor Sign In'}</h2>
+                <p className="text-xs text-text-secondary mt-1">Enter your credentials to continue.</p>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">Email Address</label>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@clinix.ng" className="w-full px-3 py-2.5 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">Password</label>
+                  <div className="relative">
+                    <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full px-3 py-2.5 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none pr-10" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light hover:text-text-secondary cursor-pointer">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+                <button onClick={handleLoginSubmit} disabled={isLoading || !email || !password} className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-xs py-3 rounded transition-colors mt-2 cursor-pointer disabled:opacity-70">
+                  {isLoading ? 'Authenticating...' : 'Sign In'}
+                </button>
+              </div>
+              <div className="mt-6 text-center text-[11px] text-text-secondary">
+                Don't have an account?{' '}
+                <button onClick={() => { setView('register'); setError(''); }} className="font-bold text-primary hover:underline cursor-pointer">Register as {role === 'student' ? 'Student' : 'Supervisor'}</button>
+              </div>
+            </div>
+          )}
+
+          {view === 'register' && (
+            <div>
+              <button onClick={() => setView('login')} className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-6 flex items-center gap-1 hover:text-text-primary cursor-pointer">
+                <ArrowLeft className="w-3 h-3" /> Back to sign in
+              </button>
+              <div className="mb-6">
+                <h2 className="text-lg font-bold text-text-primary">{role === 'student' ? 'Student Registration' : 'Supervisor Registration'}</h2>
+                <p className="text-xs text-text-secondary mt-1">Create your profile to get started.</p>
+              </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <input aria-label="First name" type="text" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name" className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                  <input aria-label="Last name" type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last name" className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                </div>
+                <input aria-label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                <input aria-label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                <input aria-label="Hospital" type="text" value={hospital} onChange={e => setHospital(e.target.value)} placeholder="Hospital / Institution" className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                {role === 'student' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <select value={yearOfStudy} onChange={e => setYearOfStudy(e.target.value)} className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none">
+                      <option value="400">400L</option>
+                      <option value="500">500L</option>
+                      <option value="600">600L</option>
+                    </select>
+                    <input aria-label="Matric number" type="text" value={matricNumber} onChange={e => setMatricNumber(e.target.value)} placeholder="Matric number" className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                  </div>
+                )}
+                {role === 'supervisor' && (
+                  <input aria-label="MDCN registration number" type="text" value={mdcnRegNo} onChange={e => setMdcnRegNo(e.target.value)} placeholder="MDCN registration number" className="w-full px-3 py-2 rounded border border-border bg-bg-main text-sm focus:border-primary outline-none" />
+                )}
+                {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+                <button onClick={handleRegisterSubmit} disabled={isLoading || !firstName || !lastName || !email || !password || !hospital} className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-xs py-3 rounded transition-colors mt-4 cursor-pointer disabled:opacity-70">
+                  {isLoading ? 'Creating account...' : 'Create Account'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
