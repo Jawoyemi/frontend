@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Activity, ArrowLeft, Eye, EyeOff, Shield, Stethoscope, User as UserIcon, Users } from 'lucide-react';
-import EmailVerificationPage from './EmailVerificationPage';
-import { login, register, resendVerification, verifyEmail } from '../lib/api';
+import { login, register } from '../lib/api';
 import { mapUser, User } from '../types';
 
 interface LoginPageProps {
@@ -9,7 +8,7 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
-  const [view, setView] = useState<'role' | 'login' | 'register' | 'verification'>('role');
+  const [view, setView] = useState<'role' | 'login' | 'register'>('role');
   const [role, setRole] = useState<'student' | 'supervisor' | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,19 +63,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         hospital,
         mdcn_reg_no: role === 'supervisor' ? mdcnRegNo : undefined,
       });
-      setView('verification');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to create account.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerificationSubmit = async (code: string) => {
-    setError('');
-    setIsLoading(true);
-    try {
-      await verifyEmail({ email, code });
+      // Auto-login after registration
       const tokenResponse = await login({ email, password });
       const userModule = await import('../lib/api');
       const apiUser = await userModule.getMe(tokenResponse.access_token);
@@ -85,7 +72,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       }
       onLogin(mapUser(apiUser), tokenResponse.access_token);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to verify email.');
+      setError(err instanceof Error ? err.message : 'Unable to create account.');
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +82,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setError('');
     setIsLoading(true);
     try {
-      await resendVerification(email);
+      // Verification flow is disabled
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to resend verification code.');
     } finally {
@@ -108,19 +95,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     { icon: Shield, title: 'Verified Credentials', desc: 'Securely logged student encounters and supervisor reviews.' },
     { icon: Users, title: 'Patient Management', desc: 'Integrated patient queuing and records management system.' },
   ];
-
-  if (view === 'verification') {
-    return (
-      <EmailVerificationPage
-        email={email}
-        error={error}
-        loading={isLoading}
-        onBack={() => setView('register')}
-        onVerify={handleVerificationSubmit}
-        onResend={handleResendVerification}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-bg-main flex items-center justify-center p-4">

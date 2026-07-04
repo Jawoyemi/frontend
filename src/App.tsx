@@ -108,7 +108,12 @@ export default function App() {
       setEncounters(encounterRows);
       const mappedPatients = patientRows.map((patient) => mapPatient(patient, encounterRows));
       setPatients(mappedPatients);
-      setSelectedPatientId((previous) => previous || mappedPatients[0]?.id || '');
+      const activePatients = mappedPatients.filter((patient) => patient.isActiveQueueItem);
+      setSelectedPatientId((previous) => (
+        activePatients.some((patient) => patient.id === previous)
+          ? previous
+          : activePatients[0]?.id || mappedPatients[0]?.id || ''
+      ));
       setLogs(activityRows.map(activityToEvent));
       setPortfolio(portfolioRow);
       setPortfolioStats(statsRow);
@@ -157,6 +162,11 @@ export default function App() {
     setCurrentTab('new-encounter');
   };
 
+  const handleOpenWallet = (patientId: string) => {
+    setWalletPatientId(patientId);
+    setShowWalletSuccess(true);
+  };
+
   const handleCreatePatient = async (payload: ApiPatientCreate) => {
     const newPatient = await createPatient(token, payload);
     await refreshData();
@@ -167,8 +177,8 @@ export default function App() {
   };
 
   const handleEncounterFinalized = async (patientId: string, encounterId: string) => {
-    setWalletPatientId(patientId);
-    setShowWalletSuccess(walletAutoSync);
+    setWalletPatientId('');
+    setShowWalletSuccess(false);
     await refreshData();
     triggerToast(`Encounter ${encounterId.slice(0, 8)} finalized for review`);
   };
@@ -199,6 +209,7 @@ export default function App() {
     .filter((encounter) => encounter.status === 'finalized')
     .map(procedureFromEncounter);
   const pendingEncounters = encounters.filter((encounter) => encounter.status === 'pending_review');
+  const activePatients = patients.filter((patient) => patient.isActiveQueueItem);
 
   const headerInfo = {
     dashboard: { title: 'Clinical Dashboard', subtitle: currentUser.hospital || 'Clinix' },
@@ -215,7 +226,7 @@ export default function App() {
       case 'dashboard':
         return (
           <DashboardView
-            patients={patients}
+            patients={activePatients}
             logs={logs}
             portfolio={portfolio}
             pendingReviewCount={pendingEncounters.length}
@@ -232,7 +243,7 @@ export default function App() {
         return (
           <NewEncounterView
             token={token}
-            patients={patients}
+            patients={activePatients}
             selectedPatientId={selectedPatientId}
             loading={dataLoading}
             error={dataError}
@@ -263,6 +274,7 @@ export default function App() {
             error={dataError}
             onRetry={refreshData}
             onStartEncounter={handleStartEncounter}
+            onOpenWallet={handleOpenWallet}
             onCreatePatient={handleCreatePatient}
             searchValue={searchValue}
           />

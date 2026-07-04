@@ -30,6 +30,8 @@ export interface Patient {
   };
   workingDiagnosis?: string;
   latestEncounterId?: string;
+  latestEncounterStatus?: string;
+  isActiveQueueItem: boolean;
 }
 
 export interface ActivityEvent {
@@ -230,14 +232,18 @@ export function mapUser(user: ApiUser): User {
 }
 
 export function mapPatient(patient: ApiPatient, encounters: ApiEncounter[] = []): Patient {
-  const latest = encounters
-    .filter((encounter) => encounter.patient_id === patient.id)
+  const patientEncounters = encounters.filter((encounter) => encounter.patient_id === patient.id);
+  const activeEncounters = patientEncounters.filter((encounter) => ['draft', 'in_progress', 'pending_review', 'rejected'].includes(encounter.status));
+  const latestEncounter = patientEncounters
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
-  const vitals = latest?.vitals || {};
+  const activeEncounter = activeEncounters
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+  const vitals = activeEncounter?.vitals || {};
   const temp = Number(vitals.temperature || vitals.temp || 0);
   const pulse = Number(vitals.pulse || 0);
   const spo2 = Number(vitals.spo2 || 0);
   const bp = String(vitals.blood_pressure || vitals.bp || '');
+  const isActiveQueueItem = activeEncounters.length > 0 || patientEncounters.length === 0;
 
   return {
     id: patient.id,
@@ -247,11 +253,13 @@ export function mapPatient(patient: ApiPatient, encounters: ApiEncounter[] = [])
     age: patient.age || 0,
     gender: patient.gender,
     phone: patient.phone,
-    chiefComplaint: latest?.chief_complaint || 'No active complaint recorded',
-    waitingTime: latest ? Math.max(1, Math.round((Date.now() - new Date(latest.created_at).getTime()) / 60000)) : 0,
-    priority: latest?.severity === 'severe' || latest?.severity === 'life_threatening' ? 'urgent' : latest ? 'waiting' : 'routine',
+    chiefComplaint: activeEncounter?.chief_complaint || latestEncounter?.chief_complaint || 'No active complaint recorded',
+    waitingTime: activeEncounter ? Math.max(1, Math.round((Date.now() - new Date(activeEncounter.created_at).getTime()) / 60000)) : 0,
+    priority: activeEncounter?.severity === 'severe' || activeEncounter?.severity === 'life_threatening' ? 'urgent' : 'waiting',
     vitals: { temp, bp, pulse, spo2 },
-    workingDiagnosis: latest?.working_diagnosis,
-    latestEncounterId: latest?.id,
+    workingDiagnosis: activeEncounter?.working_diagnosis || latestEncounter?.working_diagnosis,
+    latestEncounterId: latestEncounter?.id,
+    latestEncounterStatus: latestEncounter?.status,
+    isActiveQueueItem,
   };
 }
