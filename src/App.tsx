@@ -243,7 +243,7 @@ export default function App() {
         return (
           <NewEncounterView
             token={token}
-            patients={activePatients}
+            patients={patients}
             selectedPatientId={selectedPatientId}
             loading={dataLoading}
             error={dataError}

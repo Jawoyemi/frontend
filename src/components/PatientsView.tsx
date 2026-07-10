@@ -47,7 +47,7 @@ export default function PatientsView({ patients, loading, error, onRetry, onStar
   function renderPatientCard(p: Patient, idx: number, finalized = false) {
     const isHighTemp = p.vitals.temp >= 38.0;
     const needsChanges = p.latestEncounterStatus === 'rejected';
-    const handleCardClick = finalized ? () => onOpenWallet(p.id) : undefined;
+    const handleCardClick = () => onStartEncounter(p.id);
     return (
       <motion.div
         key={p.id}
@@ -55,10 +55,10 @@ export default function PatientsView({ patients, loading, error, onRetry, onStar
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: idx * 0.04 }}
         onClick={handleCardClick}
-        role={finalized ? 'button' : undefined}
-        tabIndex={finalized ? 0 : undefined}
-        onKeyDown={finalized ? (event) => { if (event.key === 'Enter' || event.key === ' ') onOpenWallet(p.id); } : undefined}
-        className={`card-base p-5 transition-all group ${finalized ? 'hover:translate-y-[-2px] cursor-pointer hover:border-primary/30' : 'hover:translate-y-[-2px]'}`}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleCardClick(); }}
+        className={`card-base p-5 transition-all group hover:translate-y-[-2px] cursor-pointer hover:border-primary/30`}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -98,9 +98,9 @@ export default function PatientsView({ patients, loading, error, onRetry, onStar
             {p.waitingTime}m waiting - {p.age}{p.gender}
           </div>
           {!finalized ? (
-            <button onClick={() => onStartEncounter(p.id)} className="px-3 py-1.5 bg-white border border-border text-text-secondary rounded-lg text-[10px] font-bold hover:gradient-primary hover:text-white hover:border-primary">Begin Intake</button>
+            <button onClick={(e) => { e.stopPropagation(); onStartEncounter(p.id); }} className="px-3 py-1.5 bg-white border border-border text-text-secondary rounded-lg text-[10px] font-bold hover:gradient-primary hover:text-white hover:border-primary">Begin Intake</button>
           ) : (
-            <span className="px-3 py-1.5 rounded-lg border border-success/20 bg-success/5 text-success text-[10px] font-bold">Open Wallet QR</span>
+            <button onClick={(e) => { e.stopPropagation(); onOpenWallet(p.id); }} className="px-3 py-1.5 rounded-lg border border-success/20 bg-success/5 text-success text-[10px] font-bold hover:bg-success/10 cursor-pointer">Open Wallet QR</button>
           )}
         </div>
       </motion.div>

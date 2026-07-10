@@ -32,6 +32,10 @@ export interface Patient {
   latestEncounterId?: string;
   latestEncounterStatus?: string;
   isActiveQueueItem: boolean;
+  aiAnalysis?: AIAnalysis;
+  examNotes?: string;
+  treatmentPlan?: string;
+  associatedSymptoms?: string[];
 }
 
 export interface ActivityEvent {
@@ -128,6 +132,7 @@ export interface ApiEncounter {
   vitals?: Record<string, unknown>;
   exam_notes?: string;
   working_diagnosis?: string;
+  investigations?: string[];
   treatment_plan?: string;
   follow_up?: string;
   supervisor_notes?: string;
@@ -238,7 +243,7 @@ export function mapPatient(patient: ApiPatient, encounters: ApiEncounter[] = [])
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
   const activeEncounter = activeEncounters
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
-  const vitals = activeEncounter?.vitals || {};
+  const vitals = (activeEncounter?.vitals || latestEncounter?.vitals) || {};
   const temp = Number(vitals.temperature || vitals.temp || 0);
   const pulse = Number(vitals.pulse || 0);
   const spo2 = Number(vitals.spo2 || 0);
@@ -261,5 +266,16 @@ export function mapPatient(patient: ApiPatient, encounters: ApiEncounter[] = [])
     latestEncounterId: latestEncounter?.id,
     latestEncounterStatus: latestEncounter?.status,
     isActiveQueueItem,
+    aiAnalysis: (activeEncounter?.ai_diagnosis || latestEncounter?.ai_diagnosis) ? {
+      primaryDiagnosis: (activeEncounter?.ai_diagnosis || latestEncounter?.ai_diagnosis) as string,
+      confidence: (activeEncounter?.ai_confidence || latestEncounter?.ai_confidence) as number || 0,
+      differential: (activeEncounter?.ai_differential || latestEncounter?.ai_differential) as any || [],
+      recommendedInvestigations: (activeEncounter?.investigations || latestEncounter?.investigations) as any || [],
+      urgency: (activeEncounter?.severity || latestEncounter?.severity) as string || '',
+      mcpActions: (activeEncounter?.ai_actions_triggered || latestEncounter?.ai_actions_triggered) as any || []
+    } : undefined,
+    examNotes: activeEncounter?.exam_notes || latestEncounter?.exam_notes,
+    treatmentPlan: activeEncounter?.treatment_plan || latestEncounter?.treatment_plan,
+    associatedSymptoms: (activeEncounter?.associated_symptoms || latestEncounter?.associated_symptoms) as string[] || [],
   };
 }
